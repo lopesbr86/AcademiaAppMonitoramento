@@ -1,0 +1,68 @@
+/* Configuração global para zerar margens e usar border-box */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 15px; /* Evita que o conteúdo cole nas bordas do celular */
+}
+
+/* Container principal flexível e responsivo */
+.container {
+    width: 100%;
+    max-width: 450px; /* Limita a largura em telas grandes (fica com cara de app mobile) */
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #111;
+}
+
+p {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Campos de input e botões adaptáveis */
+.card-busca {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+input, button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    button:hover {
+        background-color: #0056b3;
+    }

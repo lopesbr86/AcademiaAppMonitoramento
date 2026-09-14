@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <!-- A TAG QUE TORNA O SITE RESPONSIVO NO CELULAR -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Academia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Monitor de Lotação</h1>
+        <p>Descubra se a academia está cheia em tempo real.</p>
+
+        <div class="card-busca">
+            <input type="text" id="cidade" placeholder="Digite sua cidade (ex: Guarujá)">
+            <input type="text" id="academia" placeholder="Nome da Academia (ex: Smart Fit)">
+            <!-- O botão  chama a função executarBusca() -->
+            <button onclick="executarBusca()">Buscar Academia</button>
+        </div>
+    </div>
+
+    <!-- Importação do arquivo JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
