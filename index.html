@@ -6,21 +6,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoramento de Academia</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Configura√ß√µes do PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#222222">
 </head>
 <body>
     <div class="container">
-        <h1>Monitor de LotaÁ„o</h1>
-        <p>Descubra se a academia est· cheia em tempo real.</p>
+        <h1>Monitor de Lota√ß√£o</h1>
+        <p>Descubra se a academia est√° cheia em tempo real.</p>
 
         <div class="card-busca">
-            <input type="text" id="cidade" placeholder="Digite sua cidade (ex: Guaruj·)">
+            <input type="text" id="cidade" placeholder="Digite sua cidade (ex: Guaruj√°)">
             <input type="text" id="academia" placeholder="Nome da Academia (ex: Smart Fit)">
-            <!-- O bot„o  chama a funÁ„o executarBusca() -->
+            <!-- O bot√£o  chama a fun√ß√£o executarBusca() -->
             <button onclick="executarBusca()">Buscar Academia</button>
         </div>
     </div>
 
-    <!-- ImportaÁ„o do arquivo JavaScript -->
+    <!-- Importa√ß√£o do arquivo JavaScript principal -->
     <script src="script.js"></script>
+
+    <!-- Registro do Service Worker para o PWA funcionar offline -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('Service Worker registrado com sucesso!'))
+                    .catch((err) => console.log('Falha ao registrar Service Worker:', err));
+            });
+        }
+    </script>
 </body>
 </html>
