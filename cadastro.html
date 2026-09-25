@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Bruna Lopes, Danilo Ferreira, Júlia Ribeiro, Lydia Aquino, Luísa Marçal">
+    <meta name="description" content="App Monitoramento de Lotação em Academia, GymUp">
+    <meta name="keywords" content="etec, app, academia, treino, saúde, lotação">
+    <link rel="stylesheet" href="login.css">
+    <title>Cadastro - GymUp</title>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <header class="login-header">
+            <img src="[https://via.placeholder.com/100](https://via.placeholder.com/100)" alt="Logo GymCheck"
+                class="profile-img">
+            <h2>Criar Conta</h2>
+            <p>Cadastre-se para acompanhar a lotação em tempo real</p>
+        </header>
+
+        <main>
+            <form action="cadastro.php" method="POST" class="login-form">
+                <div class="input-group">
+                    <label for="nome">Nome completo</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="email">E-mail</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="senha" name="senha" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="confirmar_senha">Confirmar Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="••••••••"
+                            required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">Cadastrar</button>
+            </form>
+        </main>
+
+        <footer class="login-footer">
+            <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
+        </footer>
+
+    </div>
+
+</body>
+
+</html>
