@@ -2,38 +2,202 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- A TAG QUE TORNA O SITE RESPONSIVO NO CELULAR -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoramento de Academia</title>
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Configurações do PWA -->
+    <title>GymUp - In&iacute;cio</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#222222">
+    <meta name="theme-color" content="#0052cc">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Monitor de Lotação</h1>
-        <p>Descubra se a academia está cheia em tempo real.</p>
 
-        <div class="card-busca">
-            <input type="text" id="cidade" placeholder="Digite sua cidade (ex: Guarujá)">
-            <input type="text" id="academia" placeholder="Nome da Academia (ex: Smart Fit)">
-            <!-- O botão  chama a função executarBusca() -->
-            <button onclick="executarBusca()">Buscar Academia</button>
+    <div class="app-container">
+        <header class="app-header dashboard-header">
+            <div class="logo-container" style="justify-content: flex-start; margin-bottom: 0;">
+                <h1>GymUp</h1>
         </div>
+            <p>Consulte a lota&ccedil;&atilde;o das academias em tempo real</p>
+        </header>
+
+        <main class="app-content">
+            <div class="search-card">
+                <h3 style="font-size: 1rem; margin-bottom: 12px; color: #1a202c;">Encontrar Academia</h3>
+                <form id="form-busca">
+                    <div class="input-group">
+                        <label for="cidade">Cidade</label>
+                        <input type="text" id="cidade" name="cidade" required>
     </div>
 
-    <!-- Importação do arquivo JavaScript principal -->
-    <script src="script.js"></script>
+                    <div class="input-group">
+                        <label for="academia">Nome da Academia (Opcional)</label>
+                        <input type="text" id="academia" name="academia">
+                    </div>
 
-    <!-- Registro do Service Worker para o PWA funcionar offline -->
+                    <button type="submit" class="btn-primary">Pesquisar Lota&ccedil;&atilde;o</button>
+                </form>
+            </div>
+
+            <!-- &Aacute;rea onde os resultados da busca ou o link de cadastro ser&atilde;o injetados dinamicamente -->
+            <div id="resultados-container" class="results-area" style="margin-top: 16px;"></div>
+        </main>
+
+        <!-- Barra inferior limpa, sem emojis -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item active">In&iacute;cio</a>
+            <a href="historico.html" class="nav-item">Hist&oacute;rico</a>
+            <a href="perfil.html" class="nav-item">Perfil</a>
+        </nav>
+    </div>
+
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(() => console.log('Service Worker registrado com sucesso!'))
-                    .catch((err) => console.log('Falha ao registrar Service Worker:', err));
+        document.getElementById('form-busca').addEventListener('submit', function (e) {
+            e.preventDefault();
+            realizarBusca();
+        });
+
+        function realizarBusca() {
+            const cidade = encodeURIComponent(document.getElementById('cidade').value.trim());
+            const academia = encodeURIComponent(document.getElementById('academia').value.trim());
+            const containerResultados = document.getElementById('resultados-container');
+
+            containerResultados.innerHTML = `<p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 15px;">A pesquisar...</p>`;
+
+            fetch(`buscar_academia.php?cidade=${cidade}&academia=${academia}`)
+                .then(response => response.text().then(text => {
+                    try { return JSON.parse(text); }
+                    catch (err) { throw new Error("O servidor retornou uma resposta inv&aacute;lida."); }
+                }))
+                .then(dados => {
+                    containerResultados.innerHTML = "";
+
+                    // Bloco HTML reutilizável para o card de "Cadastrar nova"
+                    const cardCadastrarHTML = `
+                            <div style="background: #f8fafc; border: 2px dashed #cbd5e1; padding: 16px; border-radius: 12px; text-align: center; margin-top: 16px; margin-bottom: 20px;">
+                                <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 8px;">N&atilde;o encontrou a academia que procura?</p>
+                                <p style="font-size: 0.85rem;">
+                                    <a href="cadastrar_academia.html" style="color: #0052cc; font-weight: 600; text-decoration: underline;">
+                                        Clique aqui para cadastrar uma nova
+                                    </a>
+                                </p>
+                            </div>
+                        `;
+
+                    // Se a base de dados estiver vazia para a pesquisa
+                    if (dados.erro || (Array.isArray(dados) && dados.length === 0)) {
+                        const mensagem = dados.erro || "Nenhuma academia encontrada para esta regi&atilde;o.";
+                        containerResultados.innerHTML = `
+                                <div style="background: #fff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; text-align: center; margin-top: 15px;">
+                                    <p style="color: #4a5568; font-size: 0.9rem; margin-bottom: 12px;">${mensagem}</p>
+                                </div>
+                            `;
+                        // Adiciona o card de cadastro logo abaixo da mensagem de vazio
+                        containerResultados.innerHTML += cardCadastrarHTML;
+                        return;
+                    }
+
+                    // Renderiza as academias encontradas
+                    dados.forEach(item => {
+                        const lotacaoTexto = (item.statusLotacaoAtual) ? `Lota&ccedil;&atilde;o: ${item.statusLotacaoAtual}` : 'Sem avalia&ccedil;&otilde;es';
+                        const estiloBadge = (item.statusLotacaoAtual) ? 'background: #def7ec; color: #03543f;' : 'background: #f1f5f9; color: #475569;';
+
+                        containerResultados.innerHTML += `
+                                <div style="background: #fff; border: 1px solid #e2e8f0; padding: 14px; border-radius: 12px; margin-top: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" id="card-academia-${item.id}">
+                                    <h4 style="font-size: 0.95rem; color: #1a202c; margin-bottom: 4px;">${item.nome}</h4>
+                                    <p style="font-size: 0.8rem; color: #718096; margin-bottom: 8px;">${item.endereco || 'Endere&ccedil;o n&atilde;o especificado'}</p>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                        <span id="badge-${item.id}" style="font-size: 0.8rem; font-weight: 600; ${estiloBadge} padding: 3px 8px; border-radius: 6px; display: inline-block;">
+                                            ${lotacaoTexto}
+                                        </span>
+                                    </div>
+
+                                    <!-- &Aacute;rea de Vota&ccedil;&atilde;o -->
+                                    <div style="border-top: 1px solid #edf2f7; padding-top: 10px; margin-top: 8px;">
+                                        <p style="font-size: 0.75rem; color: #4a5568; margin-bottom: 6px; font-weight: 600;">Atualizar lota&ccedil;&atilde;o atual:</p>
+                                        <div style="display: flex; gap: 6px;">
+                                            <select id="select-voto-${item.id}" style="flex: 1; padding: 6px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff;">
+                                                <option value="Baixo">Baixo</option>
+                                                <option value="Moderado" selected>Moderado</option>
+                                                <option value="Alto">Alto</option>
+                                            </select>
+                                            <button onclick="enviarVoto(${item.id})" style="background: #0052cc; color: #fff; border: none; padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                                Votar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                    });
+
+                    // Insere a opção de cadastro no final da lista, mesmo quando há resultados encontrados
+                    containerResultados.innerHTML += cardCadastrarHTML;
+                })
+                .catch(erro => {
+                    console.error("Erro detalhado:", erro);
+                    containerResultados.innerHTML = `
+                            <div style="background: #fde8e8; border: 1px solid #f8b4b4; padding: 14px; border-radius: 12px; text-align: center; color: #9b1c1c; font-size: 0.85rem; margin-top: 15px;">
+                                Erro ao comunicar com o servidor.
+                            </div>
+                        `;
+                });
+        }
+
+        function enviarVoto(idAcademia) {
+            const select = document.getElementById(`select-voto-${idAcademia}`);
+            const statusLotacao = select.value;
+            const card = document.getElementById(`card-academia-${idAcademia}`);
+
+            const formData = new URLSearchParams();
+            formData.append('idAcademia', idAcademia);
+            formData.append('status_lotacao', statusLotacao);
+
+            fetch('votar_academia.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+                .then(response => {
+                    return response.text().then(text => {
+                        try {
+                            return JSON.parse(text);
+                        } catch (err) {
+                            console.error("Resposta bruta do PHP:", text);
+                            throw new Error("O servidor retornou uma resposta inválida (não é JSON). Verifique a consola.");
+                        }
+                    });
+                })
+                .then(resultado => {
+                    if (resultado.sucesso) {
+                        const badge = document.getElementById(`badge-${idAcademia}`);
+                        badge.innerHTML = `Lota&ccedil;&atilde;o: ${statusLotacao}`;
+                        badge.style.background = '#def7ec';
+                        badge.style.color = '#03543f';
+
+                        const labelTempo = document.getElementById(`tempo-${idAcademia}`);
+                        if (labelTempo) {
+                            labelTempo.innerHTML = 'Atualizado agora mesmo';
+                        }
+
+                        let feedbackMsg = card.querySelector('.feedback-voto');
+                        if (!feedbackMsg) {
+                            feedbackMsg = document.createElement('div');
+                            feedbackMsg.className = 'feedback-voto';
+                            feedbackMsg.style.cssText = 'margin-top: 8px; font-size: 0.78rem; font-weight: 600; color: #03543f; background: #f0fdf4; padding: 6px; border-radius: 6px; text-align: center; transition: opacity 0.5s ease;';
+                            card.appendChild(feedbackMsg);
+                        }
+                        feedbackMsg.innerHTML = 'Voto registado com sucesso!';
+                        feedbackMsg.style.opacity = '1';
+
+                        setTimeout(() => {
+                            feedbackMsg.style.opacity = '0';
+                        }, 3000);
+
+                    } else {
+                        alert("Erro ao votar: " + (resultado.erro || "Tente novamente."));
+                    }
+                })
+                .catch(err => {
+                    console.error("Erro detalhado:", err);
+                    alert("Erro de conexao ao enviar voto. Veja a consola (F12) para detalhes.");
             });
         }
     </script>
