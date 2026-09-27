@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymUp - Alterar Senha</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header dashboard-header">
+            <div class="logo-container" style="justify-content: flex-start; margin-bottom: 0;">
+                <h1>GymUp</h1>
+            </div>
+            <p>Atualize a sua senha de acesso</p>
+        </header>
+
+        <main class="app-content">
+            <div class="search-card">
+                <!-- Caixa de Alerta Dinâmica para Feedback -->
+                <div id="alerta-feedback" class="alerta-feedback"></div>
+
+                <form action="processar_alterar_senha.php" method="POST">
+                    <div class="input-group">
+                        <label for="senha_atual">Senha Atual</label>
+                        <input type="password" id="senha_atual" name="senha_atual" placeholder="********" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="nova_senha">Nova Senha</label>
+                        <input type="password" id="nova_senha" name="nova_senha" placeholder="********" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="confirma_nova_senha">Confirmar Nova Senha</label>
+                        <input type="password" id="confirma_nova_senha" name="confirma_nova_senha" placeholder="********" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="margin-top: 10px;">Salvar Nova Senha</button>
+                </form>
+
+                <div class="card-footer-link" style="margin-top: 15px;">
+                    <a href="perfil.html">Voltar ao Perfil</a>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">Início</a>
+            <a href="historico.html" class="nav-item">Histórico</a>
+            <a href="perfil.html" class="nav-item active">Perfil</a>
+        </nav>
+    </div>
+
+    <script>// Script para ler a URL e exibir o alerta correto estilizado pelo style.css
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const alertaBox = document.getElementById('alerta-feedback');
+
+        if (status === 'sucesso') {
+            alertaBox.style.display = 'block';
+            alertaBox.className = 'alerta-feedback sucesso';
+            alertaBox.innerText = 'Senha alterada e salva com sucesso no banco de dados!';
+        }
+        else if (status === 'senha_incorreta') {
+            alertaBox.style.display = 'block';
+            alertaBox.className = 'alerta-feedback erro';
+            alertaBox.innerText = 'Atenção: A senha atual está incorreta.';
+        }
+        else if (status === 'erro_coincidencia') {
+            alertaBox.style.display = 'block';
+            alertaBox.className = 'alerta-feedback erro';
+            alertaBox.innerText = 'Atenção: As novas senhas digitadas não coincidem.';
+        }</script>
+</body>
+</html>

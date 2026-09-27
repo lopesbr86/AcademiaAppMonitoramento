@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymUp - Criar Conta</title>
+    <title>GymUp - Cadastrar Academia</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,42 +18,40 @@
 
         <main class="app-content">
             <div class="search-card">
-                <!-- Área de aviso dinâmico elegante -->
+                <!-- Area de aviso dinamico -->
                 <div id="alerta-feedback" style="display: none; margin-bottom: 16px; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
 
-                <form action="processar_cadastro.php" method="POST">
+                <form action="processar_cadastro_academia.php" method="POST">
                     <div class="input-group">
-                        <label for="nome">Nome Completo</label>
-                        <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required>
+                        <label for="nome">Nome da Academia</label>
+                        <input type="text" id="nome" name="nome" required>
                     </div>
 
                     <div class="input-group">
-                        <label for="email">E-mail</label>
-                        <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                        <label for="endereco">Cidade / Endere&ccedil;o</label>
+                        <input type="text" id="endereco" name="endereco" required>
                     </div>
 
                     <div class="input-group">
-                        <label for="senha">Senha</label>
-                        <input type="password" id="senha" name="senha" placeholder="********" required>
+                        <label for="status_lotacao">Lota&ccedil;&atilde;o Inicial</label>
+                        <select id="status_lotacao" name="status_lotacao" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; background-color: #fff;">
+                            <option value="Baixo">Baixo</option>
+                            <option value="Moderado" selected>Moderado</option>
+                            <option value="Alto">Alto</option>
+                        </select>
                     </div>
 
-                    <div class="input-group">
-                        <label for="confirma_senha">Confirmar Senha</label>
-                        <input type="password" id="confirma_senha" name="confirma_senha" placeholder="********" required>
-                    </div>
-
-                    <button type="submit" class="btn-primary" style="margin-top: 10px;">Criar Conta</button>
+                    <button type="submit" class="btn-primary" style="margin-top: 10px;">Salvar Academia</button>
                 </form>
 
                 <div class="card-footer-link" style="margin-top: 15px; text-align: center;">
-                    <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
+                    <a href="index.html">Voltar ao In&iacute;cio</a>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        // Captura o status enviado pelo PHP via URL para exibir a mensagem visualmente
         const urlParams = new URLSearchParams(window.location.search);
         const status = urlParams.get('status');
         const alertaBox = document.getElementById('alerta-feedback');
@@ -62,17 +60,12 @@
             alertaBox.style.display = 'block';
             alertaBox.style.backgroundColor = '#def7ec';
             alertaBox.style.color = '#03543f';
-            alertaBox.innerText = 'Conta criada com sucesso!';
-        } else if (status === 'erro_email') {
+            alertaBox.innerText = 'Academia cadastrada com sucesso!';
+        } else if (status === 'erro') {
             alertaBox.style.display = 'block';
             alertaBox.style.backgroundColor = '#fde8e8';
             alertaBox.style.color = '#9b1c1c';
-            alertaBox.innerText = 'Este e-mail já está registado. Tente outro.';
-        } else if (status === 'erro_senha') {
-            alertaBox.style.display = 'block';
-            alertaBox.style.backgroundColor = '#fde8e8';
-            alertaBox.style.color = '#9b1c1c';
-            alertaBox.innerText = 'As senhas não coincidem ou campos vazios.';
+            alertaBox.innerText = 'Erro ao cadastrar academia. Tente novamente.';
         }
     </script>
 </body>

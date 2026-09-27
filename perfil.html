@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GymUp - Meu Perfil</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header dashboard-header">
+            <div class="logo-container" style="justify-content: flex-start; margin-bottom: 0;">
+                <h1>GymUp</h1>
+            </div>
+            <p>Gerencie as suas informações de acesso</p>
+        </header>
+
+        <main class="app-content">
+            <div class="search-card" style="text-align: center;">
+                <!-- Área de aviso dinâmico -->
+                <div id="alerta-feedback" style="display: none; margin-bottom: 16px; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
+
+                <!-- Painel Padrão de Perfil -->
+                <div id="painel-perfil">
+                    <div style="width: 80px; height: 80px; background-color: #0056b3; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 15px auto;">
+                        👤
+                    </div>
+
+                    <h3 style="margin-bottom: 5px;">Minha Conta</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Gerencie a segurança da sua conta GymUp</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <a href="alterarSenha.html" class="btn-primary" style="text-decoration: none; display: block; padding: 12px; text-align: center; border-radius: 8px;">
+                            Alterar Senha
+                        </a>
+
+                        <a href="login.html" style="text-decoration: none; color: #dc3545; font-weight: 600; margin-top: 5px; display: inline-block;">
+                            Terminar Sessão (Logout)
+                        </a>
+
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 10px 0;">
+
+                        <button onclick="mostrarConfirmacao()" style="background-color: #fde8e8; color: #9b1c1c; border: 1px solid #f8b4b4; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s;">
+                            Excluir Minha Conta
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Painel de Confirmação de Exclusão (Oculto inicialmente) -->
+                <div id="painel-confirmacao" style="display: none;">
+                    <div style="font-size: 2.5rem; margin-bottom: 10px;">⚠️</div>
+                    <h3 style="color: #9b1c1c; margin-bottom: 10px;">Excluir Conta?</h3>
+                    <p style="color: #555; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.4;">
+                        Tem certeza absoluta? Esta ação é irreversível e todos os seus dados serão apagados permanentemente da nuvem.
+                    </p>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="cancelarExclusao()" style="flex: 1; background-color: #e5e7eb; color: #374151; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                            Cancelar
+                        </button>
+                        <a href="processar_excluir_conta.php" style="flex: 1; background-color: #dc3545; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                            Sim, Excluir
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">Início</a>
+            <a href="historico.html" class="nav-item">Histórico</a>
+            <a href="perfil.html" class="nav-item active">Perfil</a>
+        </nav>
+    </div>
+
+    <script>
+        // Funções para alternar entre os painéis suavemente sem pop-ups do navegador
+        function mostrarConfirmacao() {
+            document.getElementById('painel-perfil').style.display = 'none';
+            document.getElementById('painel-confirmacao').style.display = 'block';
+        }
+
+        function cancelarExclusao() {
+            document.getElementById('painel-confirmacao').style.display = 'none';
+            document.getElementById('painel-perfil').style.display = 'block';
+        }
+
+        // Tratamento de mensagens de erro via URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const alertaBox = document.getElementById('alerta-feedback');
+
+        if (status === 'erro_exclusao') {
+            alertaBox.style.display = 'block';
+            alertaBox.style.backgroundColor = '#fde8e8';
+            alertaBox.style.color = '#9b1c1c';
+            alertaBox.innerText = 'Erro ao tentar excluir a conta. Tente novamente.';
+        }
+    </script>
+</body>
+</html>
