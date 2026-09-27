@@ -1,10 +1,11 @@
 <?php
 // Configurações de acesso à base de dados MySQL na nuvem (Aiven)
-$host = 'gymupapp-bd-gymup-app.l.aivencloud.com';
-$porta = '22812';
-$db   = 'gymup_db';
-$usuario = 'avnadmin';
-$senha = 'AVNS_9bBtxq5co9SxfUDibXI';
+// Utiliza variáveis de ambiente se existirem, caso contrário usa os valores predefinidos
+$host = getenv('DB_HOST') ?: 'gymupapp-bd-gymup-app.l.aivencloud.com';
+$porta = getenv('DB_PORT') ?: '22812';
+$db   = getenv('DB_NAME') ?: 'gymup_db';
+$usuario = getenv('DB_USER') ?: 'avnadmin';
+$senha = getenv('DB_PASS') ?: 'AVNS_9bBtxq5co9SxfUDibXI';
 
 try {
     $dsn = "mysql:host=$host;port=$porta;dbname=$db;charset=utf8mb4";
