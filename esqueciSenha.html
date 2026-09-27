@@ -1,45 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="author" content="Bruna Lopes, Danilo Ferreira, Júlia Ribeiro, Lydia Aquino, Luísa Marçal">
-    <meta name="description" content="App Monitoramento de Lotação em Academia, GymUp">
-    <meta name="keywords" content="etec, app, academia, treino, saúde, lotação">
-    <link rel="stylesheet" href="login.css">
-    <title>Esqueci a senhe - GymUp</title>
+    <title>GymUp - Recuperar Senha</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <div class="login-container">
+    <div class="app-container">
+        
+        <header class="app-header">
+            <div class="logo-container">
+                <!-- Espaço reservado para o logo oficial -->
+                <img src="logo.png" alt="GymUp Logo" class="app-logo" onerror="this.style.display='none'">
+                <h1>GymUp</h1>
+            </div>
+            <p></p>
+        </header>
 
-        <div class="login-header">
-            <img src="[https://via.placeholder.com/100](https://via.placeholder.com/100)" alt="Logo GymUp"
-                class="profile-img">
-            <h2>Recuperar Senha</h2>
-            <p>Digite seu e-mail para receber as instruções de redefinição</p>
-        </div>
+        <!-- Conteúdo -->
+        <main class="app-content">
+            <div class="search-card">
+                <p class="card-instruction">
+                    Digite o e-mail cadastrado abaixo. Enviaremos as instruções para você redefinir a sua senha.
+                </p>
 
-        <form action="recuperar-senha.php" method="POST" class="login-form">
-            <div class="input-group">
-                <label for="email">E-mail cadastrado</label>
-                <div class="input-wrapper">
-                    <i class="fa-regular fa-envelope"></i>
-                    <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                <form action="processar_recuperacao.php" method="POST">
+                    <div class="input-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Enviar Instruções</button>
+                </form>
+
+                <div class="card-footer-link">
+                    <p>Lembrou da senha? <a href="login.html">Faça login</a></p>
                 </div>
             </div>
+        </main>
 
-            <button type="submit" class="btn-login">Enviar Instruções</button>
-        </form>
-
-        <div class="login-footer">
-            <p>Lembrou da senha? <a href="login.html">Voltar ao login</a></p>
-        </div>
-
+        <!-- Barra de Navegação Inferior -->
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item">Início</a>
+            <a href="login.html" class="nav-item active">Minha Conta</a>
+        </nav>
     </div>
 
 </body>
-
 </html>
