@@ -1,49 +1,58 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymUp - Entrar</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
     <link rel="stylesheet" href="style.css">
+    <title>GymUp - Entrar</title>
 </head>
-<body>
 
+<body>
     <div class="app-container">
-        <!-- Cabeçalho institucional de entrada -->
         <header class="app-header">
             <div class="logo-container">
                 <h1>GymUp</h1>
             </div>
-            <p></p>
+            <p>Entre para ver a lotação das academias</p>
         </header>
 
         <main class="app-content">
             <div class="search-card">
+                <div id="alerta-feedback" class="alerta-feedback"></div>
                 <form action="processar_login.php" method="POST">
                     <div class="input-group">
                         <label for="email">E-mail</label>
-                        <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                        <input type="email" id="email" name="email" placeholder="seu@email.com" autocomplete="email"
+                            required>
                     </div>
-
                     <div class="input-group">
                         <label for="senha">Senha</label>
-                        <input type="password" id="senha" name="senha" placeholder="********" required>
+                        <input type="password" id="senha" name="senha" placeholder="********"
+                            autocomplete="current-password" required>
                     </div>
-
-                    <div class="forgot-password">
-                        <a href="esqueciSenha.html">Esqueceu a senha?</a>
-                    </div>
-
+                    <div class="forgot-password"><a href="esqueciSenha.html">Esqueceu a senha?</a></div>
                     <button type="submit" class="btn-primary">Entrar</button>
                 </form>
-
                 <div class="card-footer-link">
                     <p>Não tem uma conta? <a href="cadastro.html">Cadastre-se</a></p>
                 </div>
             </div>
         </main>
-
     </div>
-
+    <script>
+        const status = new URLSearchParams(window.location.search).get("status");
+        const aviso = document.getElementById("alerta-feedback");
+        function mostrar(tipo, texto) { aviso.className = "alerta-feedback " + tipo; aviso.textContent = texto; }
+        if (status === "erro_login") mostrar("erro", "E-mail ou senha incorretos.");
+        else if (status === "erro_campos") mostrar("erro", "Preencha o e-mail e a senha.");
+        else if (status === "erro_conexao") mostrar("erro", "Não foi possível conectar. Tente de novo.");
+    </script>
+    <script src="pwa.js"></script>
 </body>
+
 </html>

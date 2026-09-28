@@ -1,72 +1,60 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymUp - Cadastrar Academia</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
     <link rel="stylesheet" href="style.css">
+    <title>GymUp - Cadastrar Academia</title>
 </head>
-<body>
 
+<body>
     <div class="app-container">
-        <header class="app-header dashboard-header">
-            <div class="logo-container" style="justify-content: center; margin-bottom: 0;">
+        <header class="app-header">
+            <div class="logo-container">
                 <h1>GymUp</h1>
             </div>
-            <p></p>
+            <p>Cadastre uma academia que ainda não está no app</p>
         </header>
 
         <main class="app-content">
             <div class="search-card">
-                <!-- Area de aviso dinamico -->
-                <div id="alerta-feedback" style="display: none; margin-bottom: 16px; padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; text-align: center;"></div>
-
+                <div id="alerta-feedback" class="alerta-feedback"></div>
                 <form action="processar_cadastro_academia.php" method="POST">
                     <div class="input-group">
-                        <label for="nome">Nome da Academia</label>
+                        <label for="nome">Nome da academia</label>
                         <input type="text" id="nome" name="nome" required>
                     </div>
-
                     <div class="input-group">
-                        <label for="endereco">Cidade / Endere&ccedil;o</label>
+                        <label for="endereco">Cidade / endereço</label>
                         <input type="text" id="endereco" name="endereco" required>
                     </div>
-
                     <div class="input-group">
-                        <label for="status_lotacao">Lota&ccedil;&atilde;o Inicial</label>
-                        <select id="status_lotacao" name="status_lotacao" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; background-color: #fff;">
+                        <label for="status_lotacao">Lotação inicial</label>
+                        <select id="status_lotacao" name="status_lotacao">
                             <option value="Baixo">Baixo</option>
                             <option value="Moderado" selected>Moderado</option>
                             <option value="Alto">Alto</option>
                         </select>
                     </div>
-
-                    <button type="submit" class="btn-primary" style="margin-top: 10px;">Salvar Academia</button>
+                    <button type="submit" class="btn-primary">Salvar academia</button>
                 </form>
-
-                <div class="card-footer-link" style="margin-top: 15px; text-align: center;">
-                    <a href="index.html">Voltar ao In&iacute;cio</a>
-                </div>
+                <div class="card-footer-link"><a href="index.html">Voltar ao início</a></div>
             </div>
         </main>
     </div>
-
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const status = urlParams.get('status');
-        const alertaBox = document.getElementById('alerta-feedback');
-
-        if (status === 'sucesso') {
-            alertaBox.style.display = 'block';
-            alertaBox.style.backgroundColor = '#def7ec';
-            alertaBox.style.color = '#03543f';
-            alertaBox.innerText = 'Academia cadastrada com sucesso!';
-        } else if (status === 'erro') {
-            alertaBox.style.display = 'block';
-            alertaBox.style.backgroundColor = '#fde8e8';
-            alertaBox.style.color = '#9b1c1c';
-            alertaBox.innerText = 'Erro ao cadastrar academia. Tente novamente.';
-        }
+        const status = new URLSearchParams(window.location.search).get("status");
+        const aviso = document.getElementById("alerta-feedback");
+        function mostrar(tipo, texto) { aviso.className = "alerta-feedback " + tipo; aviso.textContent = texto; }
+        if (status === "sucesso") mostrar("sucesso", "Academia cadastrada com sucesso!");
+        else if (status === "erro") mostrar("erro", "Não foi possível cadastrar a academia. Tente de novo.");
     </script>
+    <script src="pwa.js"></script>
 </body>
+
 </html>

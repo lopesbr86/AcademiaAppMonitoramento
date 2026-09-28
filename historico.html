@@ -1,46 +1,56 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GymUp - Histórico</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
+    <title>GymUp - HistÃ³rico</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
+<body>
     <div class="app-container">
         <header class="app-header dashboard-header">
-            <div class="logo-container" style="justify-content: flex-start; margin-bottom: 0;">
+            <div class="logo-container">
                 <h1>GymUp</h1>
             </div>
-            <p>Histórico de Consultas e Votos</p>
+            <p>Suas consultas e votos</p>
         </header>
 
         <main class="app-content">
             <div class="search-card">
-                <h3 style="font-size: 1rem; margin-bottom: 12px; color: #1a202c;">Suas Últimas Contribuições</h3>
+                <h3>Suas Ãºltimas contribuiÃ§Ãµes</h3>
 
-                <!-- Exemplo de itens de histórico -->
-                <div style="border-bottom: 1px solid #edf2f7; padding: 10px 0;">
-                    <strong style="font-size: 0.9rem; color: #2d3748;">Smart Fit - Centro</strong>
-                    <p style="font-size: 0.78rem; color: #718096;">Reportado como: Moderada</p>
-                    <span style="font-size: 0.72rem; color: #a0aec0;">Hoje, 14:30</span>
+                <!-- Exemplo: troque pelos itens reais do seu sistema -->
+                <div class="historico-item">
+                    <div class="historico-topo">
+                        <strong class="historico-titulo">Smart Fit - Centro</strong>
+                        <span class="status-badge amarelo">Moderada</span>
+                    </div>
+                    <span class="historico-data">Hoje, 14:30</span>
                 </div>
-
-                <div style="padding: 10px 0;">
-                    <strong style="font-size: 0.9rem; color: #2d3748;">Bluefit - Enseada</strong>
-                    <p style="font-size: 0.78rem; color: #718096;">Reportado como: Vazia / Tranquila</p>
-                    <span style="font-size: 0.72rem; color: #a0aec0;">Ontem, 18:15</span>
+                <div class="historico-item">
+                    <div class="historico-topo">
+                        <strong class="historico-titulo">Bluefit - Enseada</strong>
+                        <span class="status-badge verde">Tranquila</span>
+                    </div>
+                    <span class="historico-data">Ontem, 18:15</span>
                 </div>
             </div>
         </main>
 
         <nav class="bottom-nav">
-            <a href="index.html" class="nav-item">Início</a>
-            <a href="historico.html" class="nav-item active">Histórico</a>
+            <a href="index.html" class="nav-item">InÃ­cio</a>
+            <a href="historico.html" class="nav-item active">HistÃ³rico</a>
             <a href="perfil.html" class="nav-item">Perfil</a>
         </nav>
     </div>
-
+    <script src="pwa.js"></script>
 </body>
+
 </html>
