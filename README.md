@@ -91,7 +91,6 @@ Projeto desenvolvido como **Trabalho de Conclusão de Curso** do curso **Técnic
 | **Lydia Silva de Aquino** | Scrum Master | Facilitação ágil, remoção de impedimentos e testes de infraestrutura/PWA |
 | **Júlia Ribeiro de Souza** | Product Owner | Gestão do backlog, modelagem MySQL e integração PHP/MySQL |
 | **Bruna Fernandes Lopes** | Desenvolvedora | Interface (UI/UX), prototipagem, HTML e CSS |
-| **Luísa Marçal Leandro Fernandes** | Desenvolvedora | JavaScript, PWA (Service Workers, Cache API) e API de geolocalização |
 | **Danilo José Ferreira Domingos Atanasio** | Desenvolvedor | Lógica de negócio em PHP, autenticação, cálculo de lotação e gamificação |
 
 ## 📚 Referências
