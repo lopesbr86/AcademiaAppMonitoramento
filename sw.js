@@ -1,5 +1,5 @@
 // Troque o número da versão sempre que publicar uma atualização.
-const CACHE_NAME = 'gymup-v2';
+const CACHE_NAME = 'gymup-v3';
 
 // Telas e arquivos que ficam disponíveis mesmo sem internet.
 const urlsToCache = [
@@ -49,8 +49,11 @@ self.addEventListener('fetch', event => {
     event.respondWith(
         fetch(req)
             .then(resposta => {
-                const copia = resposta.clone();
-                caches.open(CACHE_NAME).then(cache => cache.put(req, copia));
+                // Só guarda respostas bem-sucedidas (não guarda erro 404)
+                if (resposta.ok) {
+                    const copia = resposta.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(req, copia));
+                }
                 return resposta;
             })
             .catch(() =>
