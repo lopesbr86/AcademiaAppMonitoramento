@@ -143,9 +143,10 @@
                 }))
                 .then(res => {
                     if (!res.sucesso) { toast(res.erro || 'Não foi possível votar. Tente de novo.', true); return; }
-                    const [classeMedidor, classeBadge] = NIVEIS[statusLotacao];
+                    const statusFinal = NIVEIS[res.status] ? res.status : statusLotacao;
+                    const [classeMedidor, classeBadge] = NIVEIS[statusFinal];
                     const badge = document.getElementById(`badge-${idAcademia}`);
-                    badge.textContent = statusLotacao;
+                    badge.textContent = statusFinal;
                     badge.className = `status-badge ${classeBadge}`;
                     document.getElementById(`medidor-${idAcademia}`).className = `medidor ${classeMedidor}`;
                     toast('Voto registrado. Obrigado por ajudar!');

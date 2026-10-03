@@ -1,15 +1,54 @@
 <?php
-// Configurações de acesso à base de dados MySQL na nuvem (Aiven)
-// Utiliza variáveis de ambiente se existirem, caso contrário usa os valores predefinidos
-$host = getenv('DB_HOST') ?: 'gymupapp-bd-gymup-app.l.aivencloud.com';
-$porta = getenv('DB_PORT') ?: '22812';
-$db   = getenv('DB_NAME') ?: 'gymup_db';
-$usuario = getenv('DB_USER') ?: 'avnadmin';
-$senha = getenv('DB_PASS') ?: 'AVNS_9bBtxq5co9SxfUDibXI';
+// Carrega as variÃ¡veis do arquivo .env (se existir).
+// VariÃ¡veis jÃ¡ definidas no servidor/hospedagem tÃªm prioridade.
+function carregarEnv(string $caminho): void
+{
+    if (!is_readable($caminho)) {
+        return;
+    }
+
+    $linhas = file($caminho, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+    foreach ($linhas as $linha) {
+        $linha = trim($linha);
+
+        if ($linha === '' || $linha[0] === '#' || !str_contains($linha, '=')) {
+            continue;
+        }
+
+        [$chave, $valor] = explode('=', $linha, 2);
+        $chave = trim($chave);
+        $valor = trim($valor, " \t\"'");
+
+        if (getenv($chave) === false) {
+            putenv("$chave=$valor");
+        }
+    }
+}
+
+// LÃª uma variÃ¡vel obrigatÃ³ria; falha se nÃ£o existir.
+function env(string $chave): string
+{
+    $valor = getenv($chave);
+
+    if ($valor === false || $valor === '') {
+        throw new RuntimeException("VariÃ¡vel de ambiente $chave nÃ£o definida.");
+    }
+
+    return $valor;
+}
+
+carregarEnv(__DIR__ . '/.env');
+
+$host    = env('DB_HOST');
+$porta   = env('DB_PORT');
+$db      = env('DB_NAME');
+$usuario = env('DB_USER');
+$senha   = env('DB_PASS');
 
 try {
     $dsn = "mysql:host=$host;port=$porta;dbname=$db;charset=utf8mb4";
-    
+
     $opcoes = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -19,7 +58,6 @@ try {
 
     $pdo = new PDO($dsn, $usuario, $senha, $opcoes);
 
-} catch (\PDOException $e) {
-    throw new \PDOException("Erro na ligação com a base de dados: " . $e->getMessage(), (int)$e->getCode());
+} catch (PDOException $e) {
+    throw new PDOException("Erro na ligaÃ§Ã£o com a base de dados: " . $e->getMessage(), (int) $e->getCode());
 }
-?>

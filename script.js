@@ -54,18 +54,21 @@ function renderizarResultados(listaAcademias) {
 
         card.innerHTML = `
             <div class="info">
-                <h3>${acab.nome}</h3>
-                <p>${acab.cidade}</p>
+                <h3></h3>
+                <p></p>
                 <span id="status-${acab.id}" class="status-badge cinza">A carregar lotação...</span>
             </div>
             <div class="acoes-voto">
-                <button type="button" onclick="abrirModalVoto(${acab.id}, '${acab.nome.replace(/'/g, "\\'")}', '${acab.google_place_id}', '${acab.cidade}')" class="btn-avaliar">Avaliar</button>
+                <button type="button" class="btn-avaliar">Avaliar</button>
             </div>
         `;
 
+        card.querySelector("h3").textContent = acab.nome;
+        card.querySelector("p").textContent = acab.endereco;
+        card.querySelector(".btn-avaliar").addEventListener("click", () => abrirModalVoto(acab.id, acab.nome));
+
         resultadosContainer.appendChild(card);
 
-        // Consulta a lotação baseada nos votos recentes dos últimos 90 minutos
         verificarLotacao(acab.id);
     });
 }
@@ -85,7 +88,7 @@ function verificarLotacao(idAcademia) {
 }
 
 // Abre o Modal Moderno de Avaliação
-function abrirModalVoto(idAcademia, nomeAcademia, googlePlaceId, cidade) {
+function abrirModalVoto(idAcademia, nomeAcademia) {
     const modalAntigo = document.getElementById('modal-avaliacao');
     if (modalAntigo) modalAntigo.remove();
 
@@ -96,16 +99,16 @@ function abrirModalVoto(idAcademia, nomeAcademia, googlePlaceId, cidade) {
     modal.innerHTML = `
         <div class="modal-card">
             <h3>Avaliar Lotação</h3>
-            <p>Como está a lotação da <strong>${nomeAcademia}</strong> agora?</p>
-            
+            <p>Como está a lotação da <strong class="nome-academia"></strong> agora?</p>
+
             <div class="opcoes-voto">
-                <button type="button" class="btn-opcao verde" onclick="enviarVotoDireto(${idAcademia}, '${googlePlaceId}', '${nomeAcademia}', '${cidade}', 1)">
+                <button type="button" class="btn-opcao verde" onclick="enviarVotoDireto(${idAcademia}, 1)">
                     <span class="bolinha">🟢</span> Vazia / Tranquila
                 </button>
-                <button type="button" class="btn-opcao amarelo" onclick="enviarVotoDireto(${idAcademia}, '${googlePlaceId}', '${nomeAcademia}', '${cidade}', 2)">
+                <button type="button" class="btn-opcao amarelo" onclick="enviarVotoDireto(${idAcademia}, 2)">
                     <span class="bolinha">🟡</span> Moderada
                 </button>
-                <button type="button" class="btn-opcao vermelho" onclick="enviarVotoDireto(${idAcademia}, '${googlePlaceId}', '${nomeAcademia}', '${cidade}', 3)">
+                <button type="button" class="btn-opcao vermelho" onclick="enviarVotoDireto(${idAcademia}, 3)">
                     <span class="bolinha">🔴</span> Lotada
                 </button>
             </div>
@@ -114,6 +117,7 @@ function abrirModalVoto(idAcademia, nomeAcademia, googlePlaceId, cidade) {
         </div>
     `;
 
+    modal.querySelector('.nome-academia').textContent = nomeAcademia;
     document.body.appendChild(modal);
 }
 
@@ -123,23 +127,27 @@ function fecharModalVoto() {
 }
 
 // Envia o voto via POST para o votar.php
-function enviarVotoDireto(idAcademia, googlePlaceId, nomeAcademia, cidade, nivelLotacao) {
+function enviarVotoDireto(idAcademia, nivelLotacao) {
     const formData = new FormData();
-    formData.append('google_place_id', googlePlaceId);
-    formData.append('nome_academia', nomeAcademia);
-    formData.append('cidade', cidade);
-    formData.append('nivel_lotacao', nivelLotacao);
+    formData.append('idAcademia', idAcademia);
+    formData.append('nivelLotacao', nivelLotacao);
 
-    fetch('votar.php', {
+    fetch('votar_academia.php', {
         method: 'POST',
         body: formData
     })
-        .then(response => {
+        .then(response => response.json())
+        .then(data => {
             fecharModalVoto();
-            alert("Voto registrado com sucesso! Obrigado por ajudar a comunidade GymUp.");
-            verificarLotacao(idAcademia); // Atualiza o status na tela imediatamente
+            if (data.sucesso) {
+                alert("Voto registrado com sucesso! Obrigado por ajudar a comunidade GymUp.");
+                verificarLotacao(idAcademia);
+            } else {
+                alert(data.erro || "Erro ao registrar o voto.");
+            }
         })
         .catch(err => {
+            fecharModalVoto();
             alert("Erro ao registrar o voto.");
             console.error(err);
         });

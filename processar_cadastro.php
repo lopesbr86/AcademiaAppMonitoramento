@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        $stmtCheck = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
+        $stmtCheck = $pdo->prepare("SELECT idUsuario FROM Usuario WHERE email = ?");
         $stmtCheck->execute([$email]);
         
         if ($stmtCheck->rowCount() > 0) {
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 
-        $stmtInsert = $pdo->prepare("INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)");
+        $stmtInsert = $pdo->prepare("INSERT INTO Usuario (nome, email, senha) VALUES (?, ?, ?)");
         $stmtInsert->execute([$nome, $email, $senha_hash]);
 
         header("Location: cadastro.html?status=sucesso");

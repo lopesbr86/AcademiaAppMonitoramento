@@ -3,39 +3,78 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once 'conexao.php';
 
-// Verifica se o utilizador est· realmente logado
-if (!isset($_SESSION['idUsuario']) || empty($_SESSION['idUsuario'])) {
-    echo json_encode([
-        "sucesso" => false, 
-        "erro" => "Precisa de estar com sess„o iniciada para realizar uma votaÁ„o."
-    ]);
+const NIVEIS = ['Baixo' => 1, 'Moderado' => 2, 'Alto' => 3];
+const JANELA_MINUTOS = 90;
+
+function responder(array $dados, int $codigo = 200): void
+{
+    http_response_code($codigo);
+    echo json_encode($dados);
     exit;
 }
 
-$idUsuario = $_SESSION['idUsuario'];
-$idAcademia = $_POST['idAcademia'] ?? null;
-$nivelLotacao = $_POST['status_lotacao'] ?? null;
-
-if (!empty($idAcademia) && !empty($nivelLotacao)) {
-    try {
-        // Insere o voto na tabela de registo associado ao utilizador autenticado
-        $stmt = $pdo->prepare("INSERT INTO RegistroLotacao (idAcademia, idUsuario, nivelLotacao, dataHora, presencaValidada) VALUES (?, ?, ?, NOW(), 0)");
-        $stmt->execute([$idAcademia, $idUsuario, $nivelLotacao]);
-
-        // Atualiza o status atual na tabela Academia
-        $stmtUpdate = $pdo->prepare("UPDATE Academia SET statusLotacaoAtual = ? WHERE idAcademia = ?");
-        $stmtUpdate.execute([$nivelLotacao, $idAcademia]);
-
-        echo json_encode([
-            "sucesso" => true, 
-            "mensagem" => "Voto registado com sucesso!"
-        ]);
-        exit;
-    } catch (PDOException $e) {
-        echo json_encode(["sucesso" => false, "erro" => "Erro na base de dados: " . $e->getMessage()]);
-        exit;
+// Converte a m√©dia dos votos recentes (1 a 3) em categoria
+function statusPorMedia(float $media): string
+{
+    if ($media <= 1.5) {
+        return 'Baixo';
     }
+    if ($media <= 2.3) {
+        return 'Moderado';
+    }
+    return 'Alto';
 }
 
-echo json_encode(["sucesso" => false, "erro" => "Dados incompletos ou inv·lidos."]);
-?>
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    responder(["sucesso" => false, "erro" => "M√©todo n√£o permitido."], 405);
+}
+
+if (empty($_SESSION['idUsuario'])) {
+    responder(["sucesso" => false, "erro" => "Voc√™ precisa estar logado para votar."], 401);
+}
+
+$idUsuario     = (int) $_SESSION['idUsuario'];
+$idAcademia    = filter_input(INPUT_POST, 'idAcademia', FILTER_VALIDATE_INT);
+$statusLotacao = $_POST['status_lotacao'] ?? '';
+
+if (!$idAcademia || !is_string($statusLotacao) || !array_key_exists($statusLotacao, NIVEIS)) {
+    responder(["sucesso" => false, "erro" => "Dados incompletos ou inv√°lidos."], 400);
+}
+
+try {
+    $stmt = $pdo->prepare("SELECT 1 FROM Academia WHERE idAcademia = ?");
+    $stmt->execute([$idAcademia]);
+
+    if (!$stmt->fetchColumn()) {
+        responder(["sucesso" => false, "erro" => "Academia n√£o encontrada."], 404);
+    }
+
+    $pdo->beginTransaction();
+
+    $stmt = $pdo->prepare(
+        "INSERT INTO RegistroLotacao (idAcademia, idUsuario, nivelLotacao, dataHora, presencaValidada)
+         VALUES (?, ?, ?, NOW(), 0)"
+    );
+    $stmt->execute([$idAcademia, $idUsuario, NIVEIS[$statusLotacao]]);
+
+    $stmt = $pdo->prepare(
+        "SELECT AVG(nivelLotacao) FROM RegistroLotacao
+         WHERE idAcademia = ? AND dataHora >= (NOW() - INTERVAL " . JANELA_MINUTOS . " MINUTE)"
+    );
+    $stmt->execute([$idAcademia]);
+    $statusAtual = statusPorMedia((float) $stmt->fetchColumn());
+
+    $stmt = $pdo->prepare("UPDATE Academia SET statusLotacaoAtual = ? WHERE idAcademia = ?");
+    $stmt->execute([$statusAtual, $idAcademia]);
+
+    $pdo->commit();
+
+    responder(["sucesso" => true, "mensagem" => "Voto registrado com sucesso!", "status" => $statusAtual]);
+
+} catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log("Erro ao registrar voto: " . $e->getMessage());
+    responder(["sucesso" => false, "erro" => "N√£o foi poss√≠vel registrar o voto."], 500);
+}
