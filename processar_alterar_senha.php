@@ -1,35 +1,41 @@
 <?php
 session_start();
-include 'conexao.php';
+require_once __DIR__ . '/modulo-alterar-senha/autoload.php';
 
-$id_usuario = $_SESSION['usuario_id'] ?? 1; // Exemplo de ID da sess�o
-$senha_atual = $_POST['senha_atual'] ?? '';
-$nova_senha = $_POST['nova_senha'] ?? '';
-$confirma_senha = $_POST['confirma_nova_senha'] ?? '';
-
-// 1. Verifica se as novas senhas coincidem
-if ($nova_senha !== $confirma_senha) {
-    header("Location: alterarSenha.html?status=erro_coincidencia");
+// Só aceita envio do formulário (POST).
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: alterarSenha.html');
     exit;
 }
 
-// 2. Busca o utilizador na base de dados para checar a senha antiga
-$stmt = $pdo->prepare("SELECT senha FROM usuarios WHERE id = ?");
-$stmt->execute([$id_usuario]);
-$usuario = $stmt->fetch();
-
-// 3. Valida se o utilizador existe e se a senha atual confere (usando password_verify)
-if (!$usuario || !password_verify($senha_atual, $usuario['senha'])) {
-    // A senha antiga n�o consta ou est� errada no banco de dados!
-    header("Location: alterarSenha.html?status=senha_incorreta");
+// Sem login na sessão, não há quem trocar a senha.
+if (empty($_SESSION['idUsuario'])) {
+    header('Location: login.html');
     exit;
 }
 
-// 4. Se tudo estiver correto, atualiza com a nova senha
-$nova_senha_criptografada = password_hash($nova_senha, PASSWORD_DEFAULT);
-$update = $pdo->prepare("UPDATE usuarios SET senha = ? WHERE id = ?");
-$update->execute([$nova_senha_criptografada, $id_usuario]);
+try {
+    require_once 'conexao.php'; // cria a variável $pdo
 
-header("Location: alterarSenha.html?status=sucesso");
+    $alterador = new AlteradorDeSenha(new UsuarioRepositorio($pdo));
+    $alterador->alterar(
+        (int) $_SESSION['idUsuario'],
+        (string) ($_POST['senha_atual'] ?? ''),
+        (string) ($_POST['nova_senha'] ?? ''),
+        (string) ($_POST['confirma_nova_senha'] ?? '')
+    );
+
+    // Renova o ID da sessão depois de uma mudança sensível.
+    session_regenerate_id(true);
+    header('Location: alterarSenha.html?status=sucesso');
+
+} catch (AlteracaoSenhaException $e) {
+    header('Location: alterarSenha.html?status=' . $e->getStatus());
+
+} catch (Throwable $e) {
+    // Detalhes técnicos vão para o log, nunca para a tela.
+    error_log('Erro ao alterar senha: ' . $e->getMessage());
+    header('Location: alterarSenha.html?status=erro_servidor');
+}
+
 exit;
-?>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -60,7 +60,12 @@
         if (status === "sucesso") mostrar("sucesso", "Senha alterada com sucesso!");
         else if (status === "senha_incorreta") mostrar("erro", "A senha atual está incorreta.");
         else if (status === "erro_coincidencia") mostrar("erro", "As novas senhas não coincidem.");
+        else if (status === "erro_senha_curta") mostrar("erro", "A nova senha deve ter pelo menos 6 caracteres.");
+        else if (status === "erro_senha_longa") mostrar("erro", "A nova senha é longa demais (máximo de 72 caracteres).");
+        else if (status === "erro_senha_igual") mostrar("erro", "A nova senha deve ser diferente da senha atual.");
+        else if (status === "erro_servidor") mostrar("erro", "Não foi possível alterar a senha. Tente novamente.");
     </script>
+    <script src="mostrar-senha.js"></script>
     <script src="pwa.js"></script>
 </body>
 
