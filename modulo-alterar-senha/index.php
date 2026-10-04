@@ -58,14 +58,21 @@ function tentarAlterar(callable $acao): string
     }
 }
 
-// Tenta ler um atributo direto, de fora da classe. O PHP bloqueia com um Error.
+// Tenta ler um atributo direto, de fora da classe. O PHP bloqueia o acesso.
+// Qualquer aviso ou erro do PHP vira exceção, para a mensagem aparecer na página.
 function acessoDireto(Usuario $usuario, string $atributo): string
 {
+    set_error_handler(function (int $nivel, string $mensagem): bool {
+        throw new ErrorException($mensagem, 0, $nivel);
+    });
+
     try {
         $valor = $usuario->$atributo;
         return 'acesso permitido (não deveria), valor: ' . (string) $valor;
-    } catch (Error $e) {
+    } catch (Throwable $e) {
         return $e->getMessage();
+    } finally {
+        restore_error_handler();
     }
 }
 
@@ -170,9 +177,12 @@ $respostaPontos = tentarAlterar(function () use ($exemplo) {
     $exemplo->setPontosGamificacao(-5);
 });
 
+// senhaHash é private na classe Usuario, então o teste usa um objeto de Usuario.
+$base = new Usuario(4, 'Ju Teste', 'ju@exemplo.com', $hashDemo);
+
 $acessos = [
     'nome' => ['visibilidade' => 'protected', 'mensagem' => acessoDireto($exemplo, 'nome')],
-    'senhaHash' => ['visibilidade' => 'private', 'mensagem' => acessoDireto($exemplo, 'senhaHash')],
+    'senhaHash' => ['visibilidade' => 'private', 'mensagem' => acessoDireto($base, 'senhaHash')],
     'pontosGamificacao' => ['visibilidade' => 'private', 'mensagem' => acessoDireto($exemplo, 'pontosGamificacao')],
 ];
 ?>
