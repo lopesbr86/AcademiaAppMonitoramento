@@ -1469,3 +1469,113 @@ a {
 .btn-olho:hover {
     color: var(--acento);
 }
+
+/* ===== Tela de carregamento (splash): cole no FINAL do style.css ===== */
+.splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    background:
+        radial-gradient(120% 90% at 15% 0%, rgba(56, 189, 248, .22), transparent 65%),
+        linear-gradient(160deg, var(--fundo) 0%, var(--fundo-2) 100%);
+    transition: opacity .45s ease, visibility .45s ease
+}
+
+.splash--out {
+    opacity: 0;
+    visibility: hidden
+}
+
+/* medidor de lotação: as barras enchem uma a uma */
+.splash__meter {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 64px;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, .45))
+}
+
+.splash__bar {
+    width: 12px;
+    border-radius: 4px;
+    background: #334155;
+    position: relative;
+    overflow: hidden
+}
+
+.splash__bar:nth-child(1) {
+    height: 28%
+}
+
+.splash__bar:nth-child(2) {
+    height: 52%
+}
+
+.splash__bar:nth-child(3) {
+    height: 76%
+}
+
+.splash__bar:nth-child(4) {
+    height: 100%
+}
+
+.splash__bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--acento);
+    transform: translateY(100%);
+    animation: splash-fill 1.6s ease-in-out infinite
+}
+
+.splash__bar:nth-child(2)::after {
+    animation-delay: .18s
+}
+
+.splash__bar:nth-child(3)::after {
+    animation-delay: .36s
+}
+
+.splash__bar:nth-child(4)::after {
+    animation-delay: .54s
+}
+
+@keyframes splash-fill {
+    0% {
+        transform: translateY(100%)
+    }
+
+    45%,
+    70% {
+        transform: translateY(0)
+    }
+
+    100% {
+        transform: translateY(100%)
+    }
+}
+
+/* mesmo estilo do "GymUp" do cabeçalho (.app-header h1) */
+.splash__logo {
+    font-size: 2rem;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: -1px;
+    background: linear-gradient(90deg, #fff, var(--acento));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .splash__bar::after {
+        animation: none;
+        transform: translateY(0)
+    }
+}

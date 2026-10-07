@@ -15,6 +15,44 @@
 </head>
 
 <body>
+
+    <!-- Tela de carregamento (fica logo no início do body) -->
+    <div class="splash" id="splash" role="status" aria-label="Carregando o GymUp">
+        <div class="splash__meter" aria-hidden="true">
+            <div class="splash__bar"></div>
+            <div class="splash__bar"></div>
+            <div class="splash__bar"></div>
+            <div class="splash__bar"></div>
+        </div>
+        <p class="splash__logo">GymUp</p>
+    </div>
+    <script>
+        (function () {
+            var splash = document.getElementById('splash');
+            if (!splash) return;
+
+            // mostra várias vezes por abertura do app, mas não na mesma tela
+            var MIN_MS = 2500;   // tempo mínimo na tela
+            var MAX_MS = 8000;   // segurança: some mesmo se algo travar
+            var start = Date.now();
+            var done = false;
+
+            function hide() {
+                if (done) return;
+                done = true;
+                try { sessionStorage.setItem('gymup-splash', '1'); } catch (e) { }
+                var wait = Math.max(0, MIN_MS - (Date.now() - start));
+                setTimeout(function () {
+                    splash.classList.add('splash--out');
+                    setTimeout(function () { splash.remove(); }, 600);
+                }, wait);
+            }
+
+            if (document.readyState === 'complete') hide();
+            else window.addEventListener('load', hide);
+        })();
+    </script>
+
     <div class="app-container">
         <header class="app-header dashboard-header">
             <div class="logo-container">
