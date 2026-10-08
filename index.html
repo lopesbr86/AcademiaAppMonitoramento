@@ -16,7 +16,6 @@
 
 <body>
 
-    <!-- Tela de carregamento (fica logo no início do body) -->
     <div class="splash" id="splash" role="status" aria-label="Carregando o GymUp">
         <div class="splash__meter" aria-hidden="true">
             <div class="splash__bar"></div>
@@ -31,9 +30,8 @@
             var splash = document.getElementById('splash');
             if (!splash) return;
 
-            // mostra várias vezes por abertura do app, mas não na mesma tela
-            var MIN_MS = 2500;   // tempo mínimo na tela
-            var MAX_MS = 8000;   // segurança: some mesmo se algo travar
+            var MIN_MS = 2500;
+            var MAX_MS = 8000;
             var start = Date.now();
             var done = false;
 
@@ -65,13 +63,14 @@
             <div class="search-card">
                 <h3>Encontrar academia</h3>
                 <form id="form-busca">
+                    <!-- Campo Cidade reativado -->
                     <div class="input-group">
                         <label for="cidade">Cidade</label>
-                        <input type="text" id="cidade" name="cidade" required>
+                        <input type="text" id="cidade" name="cidade" placeholder="Ex: Guarujá">
                     </div>
                     <div class="input-group">
                         <label for="academia">Nome da academia (opcional)</label>
-                        <input type="text" id="academia" name="academia">
+                        <input type="text" id="academia" name="academia" placeholder="Ex: SkyFit">
                     </div>
                     <button type="submit" class="btn-primary">Pesquisar lotação</button>
                 </form>
@@ -90,7 +89,6 @@
         const NIVEIS = { Baixo: ['n1', 'verde'], Moderado: ['n2', 'amarelo'], Alto: ['n3', 'vermelho'] };
         const box = document.getElementById('resultados-container');
 
-        // Evita que nomes/endereços com caracteres especiais quebrem a tela
         function esc(t) {
             const d = document.createElement('div');
             d.textContent = t == null ? '' : String(t);
@@ -111,52 +109,115 @@
         <a href="cadastrar_academia.html">Cadastre uma nova academia</a>
     </div>`;
 
-        document.getElementById('form-busca').addEventListener('submit', e => {
-            e.preventDefault();
-            realizarBusca();
+        function formatarTempoDecorrido(dataHoraMySQL) {
+            if (!dataHoraMySQL) return 'Nenhuma avaliação hoje';
+            
+            const dataVoto = new Date(dataHoraMySQL.replace(/-/g, '/')); 
+            const agora = new Date();
+            
+            const diferencaMs = agora - dataVoto;
+            
+            const minutos = Math.floor(diferencaMs / (1000 * 60));
+            const horas = Math.floor(minutos / 60);
+            const dias = Math.floor(horas / 24);
+
+            if (minutos < 1) return 'Atualizado agora mesmo';
+            if (minutos < 60) return `Atualizado há ${minutos} min`;
+            if (horas === 1) return `Atualizado há 1 hora`;
+            if (horas < 24) return `Atualizado há ${horas} horas`;
+            if (dias === 1) return 'Atualizado ontem';
+            
+            return `Atualizado há ${dias} dias`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarAcademiasPorGPS();
         });
 
-        function realizarBusca() {
-            const cidade = encodeURIComponent(document.getElementById('cidade').value.trim());
-            const academia = encodeURIComponent(document.getElementById('academia').value.trim());
-            box.innerHTML = '<p class="msg-centro">Pesquisando...</p>';
+        document.getElementById('form-busca').addEventListener('submit', e => {
+            e.preventDefault();
+            carregarAcademiasPorGPS();
+        });
 
-            fetch(`buscar_academia.php?cidade=${cidade}&academia=${academia}`)
-                .then(r => r.text().then(text => {
-                    try { return JSON.parse(text); }
-                    catch (err) { throw new Error('O servidor retornou uma resposta inválida.'); }
-                }))
-                .then(dados => {
-                    if (dados.erro || (Array.isArray(dados) && dados.length === 0)) {
-                        box.innerHTML = `<p class="msg-centro">${esc(dados.erro || 'Nenhuma academia encontrada nesta região.')}</p>` + cadastrarHTML;
-                        return;
-                    }
-                    box.innerHTML = dados.map(cardAcademia).join('') + cadastrarHTML;
-                })
-                .catch(err => {
-                    console.error('Erro detalhado:', err);
-                    box.innerHTML = '<p class="msg-centro erro">Não foi possível conectar ao servidor. Tente de novo.</p>';
-                });
+        function carregarAcademiasPorGPS() {
+            // Captura tanto a cidade quanto o nome da academia
+            const termoCidade = document.getElementById('cidade').value.trim();
+            const termoAcademia = document.getElementById('academia').value.trim();
+            box.innerHTML = '<p class="msg-centro">A obter a sua localização GPS...</p>';
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    box.innerHTML = '<p class="msg-centro">A procurar academias...</p>';
+
+                    // Envia lat, lon, cidade e academia para o PHP
+                    fetch(`buscar_academia.php?lat=${lat}&lon=${lon}&cidade=${encodeURIComponent(termoCidade)}&academia=${encodeURIComponent(termoAcademia)}`)
+                        .then(r => r.json())
+                        .then(dados => {
+                            if (dados.erro || (Array.isArray(dados) && dados.length === 0)) {
+                                box.innerHTML = `<p class="msg-centro">Nenhuma academia encontrada.</p>` + cadastrarHTML;
+                                return;
+                            }
+                            box.innerHTML = dados.map(cardAcademia).join('') + cadastrarHTML;
+                        })
+                        .catch(err => {
+                            console.error('Erro:', err);
+                            box.innerHTML = '<p class="msg-centro erro">Erro ao ligar ao servidor.</p>';
+                        });
+
+                }, error => {
+                    console.warn('GPS negado ou indisponível:', error);
+                    // Fallback sem GPS, mas com filtro de cidade e academia
+                    fetch(`buscar_academia.php?cidade=${encodeURIComponent(termoCidade)}&academia=${encodeURIComponent(termoAcademia)}`)
+                        .then(r => r.json())
+                        .then(dados => {
+                            if (dados.length === 0) {
+                                box.innerHTML = '<p class="msg-centro">Nenhuma academia encontrada.</p>' + cadastrarHTML;
+                            } else {
+                                box.innerHTML = dados.map(cardAcademia).join('') + cadastrarHTML;
+                            }
+                        })
+                        .catch(() => {
+                            box.innerHTML = '<p class="msg-centro erro">Erro de conexão.</p>';
+                        });
+                }, { timeout: 10000, enableHighAccuracy: true });
+            } else {
+                box.innerHTML = '<p class="msg-centro erro">O seu navegador não suporta geolocalização.</p>';
+            }
         }
 
         function cardAcademia(item) {
             const nivel = NIVEIS[item.statusLotacaoAtual];
+            const infoDistancia = item.distancia !== null && item.distancia !== undefined ? ` • a ${item.distancia} km` : '';
+            
+            const tempoDecorrido = formatarTempoDecorrido(item.ultimaAtualizacao);
+            
+            const podeVotar = item.distancia !== null && item.distancia <= 0.10;
+            
+            const disabledAttr = podeVotar ? '' : 'disabled';
+            const msgBloqueio = podeVotar ? '' : '<p class="msg-bloqueio" style="font-size: 0.75rem; color: #e53e3e; margin-bottom: 8px;">📍 Tem de estar no local (100m) para votar.</p>';
+            const classeOpacidade = podeVotar ? '' : 'style="opacity: 0.6; filter: grayscale(50%);"';
+
             return `
     <article class="academia-card" id="card-academia-${item.id}">
         <div class="academia-topo">
             <div>
                 <h4>${esc(item.nome)}</h4>
-                <p>${esc(item.endereco || 'Endereço não informado')}</p>
+                <p>${esc(item.endereco || 'Endereço não informado')}${infoDistancia}</p>
+                <p style="font-size: 0.8rem; color: #718096; margin-top: 5px; font-weight: 500;">⏱ ${tempoDecorrido}</p>
             </div>
             <span id="badge-${item.id}" class="status-badge ${nivel ? nivel[1] : 'cinza'}">${nivel ? esc(item.statusLotacaoAtual) : 'Sem avaliações'}</span>
         </div>
         <div id="medidor-${item.id}" class="medidor ${nivel ? nivel[0] : ''}" aria-hidden="true"><span></span><span></span><span></span></div>
         <div class="voto">
             <p class="voto-titulo">Como está agora?</p>
-            <div class="voto-botoes">
-                <button type="button" class="v-baixo" onclick="enviarVoto(${Number(item.id)}, 'Baixo', this)">Tranquila</button>
-                <button type="button" class="v-moderado" onclick="enviarVoto(${Number(item.id)}, 'Moderado', this)">Moderada</button>
-                <button type="button" class="v-alto" onclick="enviarVoto(${Number(item.id)}, 'Alto', this)">Lotada</button>
+            ${msgBloqueio}
+            <div class="voto-botoes" ${classeOpacidade}>
+                <button type="button" class="v-baixo" ${disabledAttr} onclick="enviarVoto(${Number(item.id)}, 'Baixo', this)">Tranquila</button>
+                <button type="button" class="v-moderado" ${disabledAttr} onclick="enviarVoto(${Number(item.id)}, 'Moderado', this)">Moderada</button>
+                <button type="button" class="v-alto" ${disabledAttr} onclick="enviarVoto(${Number(item.id)}, 'Alto', this)">Lotada</button>
             </div>
         </div>
     </article>`;
@@ -187,6 +248,10 @@
                     badge.textContent = statusFinal;
                     badge.className = `status-badge ${classeBadge}`;
                     document.getElementById(`medidor-${idAcademia}`).className = `medidor ${classeMedidor}`;
+                    
+                    const tempoParagrafo = document.querySelector(`#card-academia-${idAcademia} p:nth-of-type(2)`);
+                    if (tempoParagrafo) tempoParagrafo.innerHTML = '⏱ Atualizado agora mesmo';
+
                     toast('Voto registrado. Obrigado por ajudar!');
                 })
                 .catch(err => {
@@ -196,7 +261,6 @@
                 .finally(() => botoes.forEach(b => b.disabled = false));
         }
     </script>
-    <script src="pwa.js"></script>
 </body>
 
 </html>
