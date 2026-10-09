@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b1120">
+    <title>GymUp - Treinos</title>
+
+    <!-- Usa o mesmo CSS do resto do sistema -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Botões de excluir treino (usa as variáveis do style.css) */
+        .historico-acoes {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-mini {
+            min-height: 34px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--borda-2);
+            background: transparent;
+            color: var(--texto-3);
+            font-size: .82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s, border-color .2s, color .2s;
+        }
+
+        .btn-mini:disabled {
+            opacity: .5;
+            cursor: wait;
+        }
+
+        .btn-excluir:hover {
+            border-color: var(--alto);
+            color: var(--alto);
+            background: var(--alto-bg);
+        }
+
+        .btn-confirmar {
+            border-color: var(--alto);
+            background: var(--alto-bg);
+            color: var(--alto);
+        }
+
+        .btn-cancelar:hover {
+            color: var(--texto);
+            border-color: var(--texto-3);
+        }
+
+        .confirma {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .confirma span {
+            font-size: .82rem;
+            color: var(--texto-2);
+        }
+
+        .historico-item.confirmando .btn-excluir {
+            display: none;
+        }
+
+        .historico-item.confirmando .confirma {
+            display: flex;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="app-container">
+
+        <header class="app-header dashboard-header">
+            <div class="logo-container">
+                <h1>GymUp</h1>
+            </div>
+            <p>Meus treinos</p>
+        </header>
+
+        <main class="app-content">
+
+            <!-- Resumo da semana -->
+            <section class="search-card" aria-label="Resumo da semana">
+                <div class="semana-topo">
+                    <strong id="minutosSemana">0<small>min</small></strong>
+                    <span>nos últimos 7 dias</span>
+                </div>
+                <div class="barras" id="barras"></div>
+            </section>
+
+            <div class="metricas">
+                <div class="metrica"><b id="totalTreinos">0</b><span>treinos</span></div>
+                <div class="metrica"><b id="mediaMinutos">0 min</b><span>duração média</span></div>
+                <div class="metrica"><b id="academiaFavorita">-</b><span>mais frequentada</span></div>
+            </div>
+
+            <!-- Registrar treino -->
+            <h2 class="secao-titulo">Registrar treino</h2>
+            <form class="search-card" id="formTreino" novalidate>
+                <div class="input-group">
+                    <label for="idAcademia">Academia</label>
+                    <select id="idAcademia" required></select>
+                </div>
+
+                <div class="input-group">
+                    <label for="dataInicio">Início do treino</label>
+                    <input type="datetime-local" id="dataInicio" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="duracaoMinutos">Duração (minutos)</label>
+                    <input type="number" id="duracaoMinutos" min="1" max="600" inputmode="numeric" placeholder="Ex.: 60"
+                        required>
+                    <div class="atalhos" id="atalhos">
+                        <button type="button" data-min="30">30 min</button>
+                        <button type="button" data-min="45">45 min</button>
+                        <button type="button" data-min="60">1 h</button>
+                        <button type="button" data-min="90">1 h 30</button>
+                    </div>
+                </div>
+
+                <div class="alerta-feedback" id="mensagem" role="status"></div>
+                <button type="submit" class="btn-primary" id="btnSalvar">Salvar treino</button>
+            </form>
+
+            <!-- Histórico -->
+            <h2 class="secao-titulo">Histórico</h2>
+            <div class="search-card" id="historico"></div>
+
+        </main>
+
+        <nav class="bottom-nav">
+            <a class="nav-item" href="index.html">Início</a>
+            <a class="nav-item" href="historico.html">Histórico</a>
+            <a class="nav-item active" href="treino.html">Treino</a>
+            <a class="nav-item" href="perfil.html">Perfil</a>
+        </nav>
+
+    </div>
+
+    <script>
+        /* ============================================================
+           CONFIGURAÇÃO
+           Classe Treino: idTreino, idUsuario, idAcademia, dataInicio, duracaoMinutos
+           - USAR_API = false  -> funciona só com dados de exemplo (para ver o layout)
+           - USAR_API = true   -> usa os PHPs abaixo (você precisa criá-los)
+           ============================================================ */
+        const USAR_API = true;
+        const URL_LISTAR_TREINOS = 'modulo-treino/buscar_treino.php';  // GET  -> treinos do usuário logado
+        const URL_SALVAR_TREINO = 'modulo-treino/salvar_treino.php';   // POST -> grava um treino
+        const URL_EXCLUIR_TREINO = 'modulo-treino/excluir_treino.php';  // POST -> exclui um treino
+        const URL_LISTAR_ACADEMIAS = 'buscar_academia.php';
+
+        let academias = [];
+        let treinos = [];
+
+        function exemplos() {
+            const agora = new Date();
+            const mk = (diasAtras, hora, min, idAcademia, duracao, id) => {
+                const d = new Date(agora);
+                d.setDate(d.getDate() - diasAtras);
+                d.setHours(hora, min, 0, 0);
+                return { idTreino: id, idUsuario: 1, idAcademia, dataInicio: paraSql(d), duracaoMinutos: duracao };
+            };
+            return [
+                mk(0, 7, 30, 1, 60, 1),
+                mk(1, 18, 0, 2, 45, 2),
+                mk(3, 19, 15, 1, 75, 3),
+                mk(5, 6, 50, 3, 50, 4)
+            ];
+        }
+
+        /* ============================================================
+           UTILITÁRIOS
+           ============================================================ */
+        const $ = (id) => document.getElementById(id);
+        const DIAS_CURTOS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        /* Date -> 'YYYY-MM-DD HH:MM:SS' (formato DATETIME do MySQL) */
+        function paraSql(d) {
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+                `${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+        }
+
+        /* 'YYYY-MM-DD HH:MM:SS' -> Date */
+        function deSql(texto) {
+            return new Date(String(texto).replace(' ', 'T'));
+        }
+
+        function chaveDia(d) {
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        }
+
+        function nomeAcademia(id) {
+            const a = academias.find(x => Number(x.idAcademia) === Number(id));
+            return a ? a.nome : 'Academia ' + id;
+        }
+
+        function formatarDuracao(min) {
+            if (min < 60) return `${min} min`;
+            const h = Math.floor(min / 60), m = min % 60;
+            return m ? `${h} h ${m} min` : `${h} h`;
+        }
+
+        function rotuloData(d) {
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            const alvo = new Date(d); alvo.setHours(0, 0, 0, 0);
+            const diff = Math.round((hoje - alvo) / 86400000);
+            if (diff === 0) return 'Hoje';
+            if (diff === 1) return 'Ontem';
+            return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+        }
+
+        function escapar(texto) {
+            const div = document.createElement('div');
+            div.textContent = texto;
+            return div.innerHTML;
+        }
+
+        /* ============================================================
+           DADOS
+           ============================================================ */
+        async function carregarAcademias() {
+            if (!USAR_API) { academias = ACADEMIAS_EXEMPLO; return; }
+
+            const resp = await fetch(URL_LISTAR_ACADEMIAS); // sem filtros, devolve todas as academias
+
+            let json;
+            try {
+                json = await resp.json();
+            } catch {
+                throw new Error('Resposta inválida do servidor.');
+            }
+
+            if (!resp.ok || !Array.isArray(json)) {
+                throw new Error((json && json.erro) || 'Erro ao carregar as academias.');
+            }
+
+            academias = json
+                .map(a => ({ idAcademia: a.id, nome: a.nome }))
+                .sort((x, y) => x.nome.localeCompare(y.nome, 'pt-BR'));
+        }
+
+        async function carregarTreinos() {
+            if (!USAR_API) { treinos = exemplos(); return; }
+
+            const resp = await fetch(URL_LISTAR_TREINOS);
+
+            // Sessão expirada: volta para o login antes de tentar ler a resposta
+            if (resp.status === 401) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Se o servidor não devolveu JSON (404, erro do PHP...), mostra uma mensagem amigável
+            let json;
+            try {
+                json = await resp.json();
+            } catch {
+                throw new Error('Resposta inválida do servidor.');
+            }
+
+            if (!resp.ok) throw new Error(json.erro || 'Erro ao carregar os treinos.');
+            if (!Array.isArray(json)) throw new Error('Formato de dados inesperado.');
+
+            treinos = json; // [{ idTreino, idUsuario, idAcademia, dataInicio, duracaoMinutos }, ...]
+        }
+
+        async function salvarTreino(dados) {
+            if (!USAR_API) {
+                treinos.push({ idTreino: Date.now(), idUsuario: 1, ...dados });
+                return;
+            }
+            const resp = await fetch(URL_SALVAR_TREINO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados) // o PHP pega o idUsuario da sessão, não daqui
+            });
+            const json = await resp.json();
+            if (!resp.ok || json.erro) throw new Error(json.erro || 'Não foi possível salvar o treino.');
+            await carregarTreinos();
+        }
+
+        async function excluirTreino(idTreino) {
+            if (!USAR_API) {
+                treinos = treinos.filter(t => Number(t.idTreino) !== Number(idTreino));
+                return;
+            }
+            const resp = await fetch(URL_EXCLUIR_TREINO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idTreino: Number(idTreino) }) // o PHP confere que o treino é do usuário logado
+            });
+            if (resp.status === 401) { window.location.href = 'login.html'; return; }
+            const json = await resp.json();
+            if (!resp.ok || json.erro) throw new Error(json.erro || 'Não foi possível excluir o treino.');
+            await carregarTreinos();
+        }
+
+        /* ============================================================
+           TELA
+           ============================================================ */
+        function desenharResumo() {
+            const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+            const porDia = {};
+            const dias = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(hoje);
+                d.setDate(d.getDate() - i);
+                dias.push(d);
+                porDia[chaveDia(d)] = 0;
+            }
+
+            treinos.forEach(t => {
+                const k = chaveDia(deSql(t.dataInicio));
+                if (k in porDia) porDia[k] += Number(t.duracaoMinutos);
+            });
+
+            const maximo = Math.max(60, ...Object.values(porDia));
+            const total = Object.values(porDia).reduce((a, b) => a + b, 0);
+            $('minutosSemana').innerHTML = `${total}<small>min</small>`;
+
+            $('barras').innerHTML = dias.map((d, i) => {
+                const min = porDia[chaveDia(d)];
+                const altura = Math.max(6, Math.round((min / maximo) * 76));
+                const classes = ['dia', min > 0 ? 'ativo' : '', i === 6 ? 'hoje' : ''].join(' ');
+                return `<div class="${classes}" title="${min} min">
+              <div class="barra" style="height:${altura}px"></div>
+              <label>${DIAS_CURTOS[d.getDay()]}</label>
+            </div>`;
+            }).join('');
+
+            /* Métricas gerais */
+            $('totalTreinos').textContent = treinos.length;
+            const soma = treinos.reduce((a, t) => a + Number(t.duracaoMinutos), 0);
+            $('mediaMinutos').textContent = treinos.length ? Math.round(soma / treinos.length) + ' min' : '0 min';
+
+            const contagem = {};
+            treinos.forEach(t => { contagem[t.idAcademia] = (contagem[t.idAcademia] || 0) + 1; });
+            const favorita = Object.entries(contagem).sort((a, b) => b[1] - a[1])[0];
+            $('academiaFavorita').textContent = favorita ? nomeAcademia(favorita[0]) : '-';
+        }
+
+        function desenharHistorico() {
+            const el = $('historico');
+            if (!treinos.length) {
+                el.innerHTML = '<p class="msg-centro">Você ainda não registrou nenhum treino. Use o formulário acima para começar.</p>';
+                return;
+            }
+
+            const ordenados = [...treinos].sort((a, b) => deSql(b.dataInicio) - deSql(a.dataInicio));
+            let html = '';
+            let dataAtual = '';
+
+            ordenados.forEach(t => {
+                const d = deSql(t.dataInicio);
+                const k = chaveDia(d);
+                if (k !== dataAtual) {
+                    dataAtual = k;
+                    html += `<div class="grupo-data">${escapar(rotuloData(d))}</div>`;
+                }
+                html += `
+      <div class="historico-item">
+        <div class="historico-topo">
+          <div>
+            <div class="historico-titulo">${escapar(nomeAcademia(t.idAcademia))}</div>
+            <div class="historico-detalhe">Início às <span class="historico-hora">${pad(d.getHours())}:${pad(d.getMinutes())}</span></div>
+            <span class="historico-data">${d.toLocaleDateString('pt-BR')}</span>
+          </div>
+          <span class="status-badge azul">${formatarDuracao(Number(t.duracaoMinutos))}</span>
+        </div>
+        <div class="historico-acoes">
+          <button type="button" class="btn-mini btn-excluir" data-acao="pedir">Excluir</button>
+          <div class="confirma">
+            <span>Excluir este treino?</span>
+            <button type="button" class="btn-mini btn-confirmar" data-acao="confirmar" data-id="${Number(t.idTreino)}">Sim, excluir</button>
+            <button type="button" class="btn-mini btn-cancelar" data-acao="cancelar">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+            });
+
+            el.innerHTML = html;
+        }
+
+        function desenharTudo() {
+            desenharResumo();
+            desenharHistorico();
+        }
+
+        function preencherAcademias() {
+            $('idAcademia').innerHTML =
+                '<option value="">Selecione a academia</option>' +
+                academias.map(a => `<option value="${Number(a.idAcademia)}">${escapar(a.nome)}</option>`).join('');
+        }
+
+        function definirDataAgora() {
+            const d = new Date();
+            $('dataInicio').value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        /* tipo: 'sucesso' | 'erro' | '' (limpa) */
+        function mostrarMensagem(texto, tipo) {
+            const m = $('mensagem');
+            m.textContent = texto;
+            m.className = 'alerta-feedback' + (tipo ? ' ' + tipo : '');
+        }
+
+        /* Aviso rápido no rodapé (usa a classe .toast do style.css) */
+        function mostrarToast(texto, erro) {
+            const t = document.createElement('div');
+            t.className = 'toast' + (erro ? ' erro' : '');
+            t.textContent = texto;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2800);
+        }
+
+        /* ============================================================
+           EVENTOS
+           ============================================================ */
+        $('atalhos').addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-min]');
+            if (!btn) return;
+            $('duracaoMinutos').value = btn.dataset.min;
+            document.querySelectorAll('#atalhos button').forEach(b => b.classList.toggle('marcado', b === btn));
+        });
+
+        $('duracaoMinutos').addEventListener('input', () => {
+            document.querySelectorAll('#atalhos button').forEach(b => b.classList.remove('marcado'));
+        });
+
+        $('historico').addEventListener('click', async (e) => {
+            const btn = e.target.closest('button[data-acao]');
+            if (!btn) return;
+            const item = btn.closest('.historico-item');
+
+            if (btn.dataset.acao === 'pedir') { item.classList.add('confirmando'); return; }
+            if (btn.dataset.acao === 'cancelar') { item.classList.remove('confirmando'); return; }
+
+            if (btn.dataset.acao === 'confirmar') {
+                item.querySelectorAll('button').forEach(b => b.disabled = true);
+                try {
+                    await excluirTreino(btn.dataset.id);
+                    desenharTudo();
+                    mostrarToast('Treino excluído.');
+                } catch (erro) {
+                    item.querySelectorAll('button').forEach(b => b.disabled = false);
+                    item.classList.remove('confirmando');
+                    mostrarToast(erro.message, true);
+                }
+            }
+        });
+
+        $('formTreino').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            mostrarMensagem('', '');
+
+            const idAcademia = Number($('idAcademia').value);
+            const inicio = $('dataInicio').value;
+            const duracao = Number($('duracaoMinutos').value);
+
+            if (!idAcademia) return mostrarMensagem('Escolha a academia onde você treinou.', 'erro');
+            if (!inicio) return mostrarMensagem('Informe a data e o horário de início.', 'erro');
+            if (!Number.isInteger(duracao) || duracao < 1 || duracao > 600) {
+                return mostrarMensagem('Informe a duração em minutos (entre 1 e 600).', 'erro');
+            }
+            if (new Date(inicio) > new Date()) {
+                return mostrarMensagem('O início do treino não pode estar no futuro.', 'erro');
+            }
+
+            const dados = {
+                idAcademia,
+                dataInicio: paraSql(new Date(inicio)),
+                duracaoMinutos: duracao
+            };
+
+            $('btnSalvar').disabled = true;
+            try {
+                await salvarTreino(dados);
+                desenharTudo();
+                mostrarMensagem('Treino salvo.', 'sucesso');
+                $('duracaoMinutos').value = '';
+                document.querySelectorAll('#atalhos button').forEach(b => b.classList.remove('marcado'));
+                definirDataAgora();
+            } catch (erro) {
+                mostrarMensagem(erro.message, 'erro');
+            } finally {
+                $('btnSalvar').disabled = false;
+            }
+        });
+
+        /* ============================================================
+           INÍCIO
+           ============================================================ */
+        (async function iniciar() {
+            try {
+                await carregarAcademias();
+                await carregarTreinos();
+            } catch (erro) {
+                mostrarMensagem('Não foi possível carregar seus treinos. Tente novamente.', 'erro');
+            }
+            preencherAcademias();
+            definirDataAgora();
+            desenharTudo();
+        })();
+    </script>
+</body>
+
+</html>

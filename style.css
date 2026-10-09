@@ -1579,3 +1579,232 @@ a {
         transform: translateY(0)
     }
 }
+
+/* ===== Layout da tela Treinos ===== */
+
+/* Só o que é específico da tela de treinos.
+     Tudo usa as variáveis do style.css (--acento, --borda, --texto-3...). */
+
+/* Gráfico da semana: mesma linguagem do medidor de lotação */
+.semana-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+}
+
+.semana-topo strong {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.semana-topo strong small {
+    font-size: .9rem;
+    font-weight: 600;
+    color: var(--texto-3);
+    margin-left: 4px;
+    letter-spacing: 0;
+}
+
+.semana-topo span {
+    font-size: .82rem;
+    color: var(--texto-3);
+}
+
+.barras {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    height: 104px;
+}
+
+.dia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    height: 100%;
+}
+
+.dia .barra {
+    width: 100%;
+    max-width: 26px;
+    min-height: 6px;
+    border-radius: 4px;
+    background: #334155;
+}
+
+.dia.ativo .barra {
+    background: var(--acento);
+    box-shadow: 0 0 10px rgba(56, 189, 248, .5);
+}
+
+.dia label {
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--texto-3);
+}
+
+.dia.hoje label {
+    color: var(--acento);
+}
+
+.metricas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.metrica {
+    background: var(--superficie);
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    padding: 14px 12px;
+    min-width: 0;
+}
+
+.metrica b {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.metrica span {
+    display: block;
+    font-size: .75rem;
+    color: var(--texto-3);
+    margin-top: 2px;
+}
+
+.secao-titulo {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 26px 0 12px;
+}
+
+/* Atalhos de duração */
+.atalhos {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.atalhos button {
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 1px solid var(--borda-2);
+    border-radius: 20px;
+    background: var(--superficie-2);
+    color: var(--texto-2);
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, color .2s;
+}
+
+.atalhos button:hover {
+    border-color: var(--acento);
+    color: var(--acento);
+}
+
+.atalhos button.marcado {
+    border-color: var(--acento);
+    background: rgba(56, 189, 248, .14);
+    color: var(--acento);
+}
+
+/* Badge de duração (mesmo formato do status-badge) */
+.status-badge.azul {
+    background: rgba(56, 189, 248, .14);
+    color: var(--acento);
+}
+
+.grupo-data {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--texto-3);
+    margin: 0 0 4px;
+}
+
+.historico-item+.grupo-data {
+    margin-top: 16px;
+}
+
+.historico-hora {
+    font-variant-numeric: tabular-nums;
+}
+
+/* O botão de salvar fica separado do aviso */
+#formTreino .alerta-feedback {
+    margin-top: 4px;
+}
+
+/* Botões de excluir treino (usa as variáveis do style.css) */
+.historico-acoes {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-mini {
+    min-height: 34px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--borda-2);
+    background: transparent;
+    color: var(--texto-3);
+    font-size: .82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, color .2s;
+}
+
+.btn-mini:disabled {
+    opacity: .5;
+    cursor: wait;
+}
+
+.btn-excluir:hover {
+    border-color: var(--alto);
+    color: var(--alto);
+    background: var(--alto-bg);
+}
+
+.btn-confirmar {
+    border-color: var(--alto);
+    background: var(--alto-bg);
+    color: var(--alto);
+}
+
+.btn-cancelar:hover {
+    color: var(--texto);
+    border-color: var(--texto-3);
+}
+
+.confirma {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.confirma span {
+    font-size: .82rem;
+    color: var(--texto-2);
+}
+
+.historico-item.confirmando .btn-excluir {
+    display: none;
+}
+
+.historico-item.confirmando .confirma {
+    display: flex;
+}

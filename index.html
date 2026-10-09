@@ -30,6 +30,10 @@
             var splash = document.getElementById('splash');
             if (!splash) return;
 
+            try {
+                if (sessionStorage.getItem('gymup-splash') === '1') { splash.remove(); return; }
+            } catch (e) { }
+
             var MIN_MS = 2500;
             var MAX_MS = 8000;
             var start = Date.now();
@@ -81,6 +85,7 @@
         <nav class="bottom-nav">
             <a href="index.html" class="nav-item active">Início</a>
             <a href="historico.html" class="nav-item">Histórico</a>
+            <a href="treino.html" class="nav-item">Treino</a>
             <a href="perfil.html" class="nav-item">Perfil</a>
         </nav>
     </div>
@@ -111,12 +116,12 @@
 
         function formatarTempoDecorrido(dataHoraMySQL) {
             if (!dataHoraMySQL) return 'Nenhuma avaliação hoje';
-            
-            const dataVoto = new Date(dataHoraMySQL.replace(/-/g, '/')); 
+
+            const dataVoto = new Date(dataHoraMySQL.replace(/-/g, '/'));
             const agora = new Date();
-            
+
             const diferencaMs = agora - dataVoto;
-            
+
             const minutos = Math.floor(diferencaMs / (1000 * 60));
             const horas = Math.floor(minutos / 60);
             const dias = Math.floor(horas / 24);
@@ -126,7 +131,7 @@
             if (horas === 1) return `Atualizado há 1 hora`;
             if (horas < 24) return `Atualizado há ${horas} horas`;
             if (dias === 1) return 'Atualizado ontem';
-            
+
             return `Atualizado há ${dias} dias`;
         }
 
@@ -191,11 +196,11 @@
         function cardAcademia(item) {
             const nivel = NIVEIS[item.statusLotacaoAtual];
             const infoDistancia = item.distancia !== null && item.distancia !== undefined ? ` • a ${item.distancia} km` : '';
-            
+
             const tempoDecorrido = formatarTempoDecorrido(item.ultimaAtualizacao);
-            
+
             const podeVotar = item.distancia !== null && item.distancia <= 0.10;
-            
+
             const disabledAttr = podeVotar ? '' : 'disabled';
             const msgBloqueio = podeVotar ? '' : '<p class="msg-bloqueio" style="font-size: 0.75rem; color: #e53e3e; margin-bottom: 8px;">📍 Tem de estar no local (100m) para votar.</p>';
             const classeOpacidade = podeVotar ? '' : 'style="opacity: 0.6; filter: grayscale(50%);"';
@@ -248,7 +253,7 @@
                     badge.textContent = statusFinal;
                     badge.className = `status-badge ${classeBadge}`;
                     document.getElementById(`medidor-${idAcademia}`).className = `medidor ${classeMedidor}`;
-                    
+
                     const tempoParagrafo = document.querySelector(`#card-academia-${idAcademia} p:nth-of-type(2)`);
                     if (tempoParagrafo) tempoParagrafo.innerHTML = '⏱ Atualizado agora mesmo';
 

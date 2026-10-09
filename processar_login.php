@@ -17,7 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($usuario && password_verify($senha, $usuario['senha'])) {
-            $_SESSION['idUsuario'] = $usuario['idUsuario']; 
+            // Gera um novo identificador de sessão no momento do login
+            // (evita fixação de sessão) e descarta o antigo.
+            session_regenerate_id(true);
+
+            $_SESSION['idUsuario'] = $usuario['idUsuario'];
             $_SESSION['nomeUsuario'] = $usuario['nome'];
 
             header("Location: index.html?status=sucesso");
