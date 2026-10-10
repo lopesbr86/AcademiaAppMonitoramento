@@ -96,6 +96,10 @@
         if (status === "erro_login") mostrar("erro", "E-mail ou senha incorretos.");
         else if (status === "erro_campos") mostrar("erro", "Preencha o e-mail e a senha.");
         else if (status === "erro_conexao") mostrar("erro", "Não foi possível conectar. Tente de novo.");
+        else if (status === "erro_nao_verificado") mostrar("erro", "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada e a pasta de spam.");
+        else if (status === "verificado") mostrar("sucesso", "E-mail confirmado! Já pode entrar.");
+        else if (status === "senha_alterada") mostrar("sucesso", "Senha alterada com sucesso. Já pode entrar.");
+        else if (status === "link_invalido") mostrar("erro", "Link inválido ou já utilizado.");
     </script>
     <script src="mostrar-senha.js"></script>
     <script src="pwa.js"></script>

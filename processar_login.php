@@ -17,6 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($usuario && password_verify($senha, $usuario['senha'])) {
+
+            // Só deixa entrar quem confirmou o e-mail (checado depois da senha,
+            // para não revelar quais e-mails existem)
+            if (!$usuario['emailVerificado']) {
+                header("Location: login.html?status=erro_nao_verificado");
+                exit;
+            }
+
             // Gera um novo identificador de sessão no momento do login
             // (evita fixação de sessão) e descarta o antigo.
             session_regenerate_id(true);

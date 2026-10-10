@@ -9,6 +9,7 @@ const urlsToCache = [
     'alterarSenha.html',
     'cadastrar_academia.html',
     'index.html',
+    'treinos.html',
     'historico.html',
     'perfil.html',
     'style.css',

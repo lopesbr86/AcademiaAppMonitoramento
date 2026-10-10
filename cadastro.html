@@ -59,9 +59,12 @@
         const status = new URLSearchParams(window.location.search).get("status");
         const aviso = document.getElementById("alerta-feedback");
         function mostrar(tipo, texto) { aviso.className = "alerta-feedback " + tipo; aviso.textContent = texto; }
-        if (status === "sucesso") mostrar("sucesso", "Conta criada com sucesso!");
+        if (status === "sucesso") mostrar("sucesso", "Conta criada! Enviamos um link de confirmação para o seu e-mail. Confirme para poder entrar. Se não encontrar, confira a pasta de spam.");
         else if (status === "erro_email") mostrar("erro", "Este e-mail já está cadastrado. Tente outro.");
+        else if (status === "erro_formato") mostrar("erro", "Informe um e-mail válido.");
         else if (status === "erro_senha") mostrar("erro", "As senhas não coincidem ou há campos vazios.");
+        else if (status === "erro_envio") mostrar("erro", "Conta criada, mas não foi possível enviar o e-mail de confirmação. Use \"Esqueceu a senha?\" no login para receber um link e liberar o acesso.");
+        else if (status === "erro_conexao") mostrar("erro", "Não foi possível conectar. Tente de novo.");
     </script>
     <script src="mostrar-senha.js"></script>
     <script src="pwa.js"></script>

@@ -28,6 +28,7 @@
             <div class="search-card">
                 <p class="card-instruction">Digite o e-mail cadastrado. Enviaremos as instruções para você redefinir a
                     senha.</p>
+                <div id="alerta-feedback" class="alerta-feedback"></div>
                 <form action="processar_recuperacao.php" method="POST">
                     <div class="input-group">
                         <label for="email">E-mail</label>
@@ -47,6 +48,14 @@
             <a href="login.html" class="nav-item active">Minha conta</a>
         </nav>
     </div>
+    <script>
+        const status = new URLSearchParams(window.location.search).get("status");
+        const aviso = document.getElementById("alerta-feedback");
+        function mostrar(tipo, texto) { aviso.className = "alerta-feedback " + tipo; aviso.textContent = texto; }
+        if (status === "enviado") mostrar("sucesso", "Se esse e-mail estiver cadastrado, enviamos as instruções. Confira também a pasta de spam.");
+        else if (status === "erro_formato") mostrar("erro", "Informe um e-mail válido.");
+        else if (status === "erro_conexao") mostrar("erro", "Não foi possível processar agora. Tente novamente.");
+    </script>
     <script src="pwa.js"></script>
 </body>
 
