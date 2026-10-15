@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['idUsuario'] = $usuario['idUsuario'];
             $_SESSION['nomeUsuario'] = $usuario['nome'];
 
-            header("Location: index.html?status=sucesso");
+            header("Location: index.php?status=sucesso");
             exit;
         } else {
             header("Location: login.html?status=erro_login");

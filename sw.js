@@ -8,7 +8,7 @@ const urlsToCache = [
     'esqueciSenha.html',
     'alterarSenha.html',
     'cadastrar_academia.html',
-    'index.html',
+    'index.php',
     'treinos.html',
     'historico.html',
     'perfil.html',
@@ -59,7 +59,7 @@ self.addEventListener('fetch', event => {
             })
             .catch(() =>
                 caches.match(req).then(salvo =>
-                    salvo || (req.mode === 'navigate' ? caches.match('index.html') : undefined)
+                    salvo || (req.mode === 'navigate' ? caches.match('index.php') : undefined)
                 )
             )
     );

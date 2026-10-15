@@ -1,20 +1,18 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+﻿function iniciarApp() {
     const formBusca = document.getElementById("form-busca");
     const resultadosContainer = document.getElementById("resultados-container");
 
     if (formBusca) {
         formBusca.addEventListener("submit", function (e) {
-            e.preventDefault(); // Impede o recarregamento padrão do formulário
+            e.preventDefault();
 
             const cidade = document.getElementById("cidade").value;
             const academia = document.getElementById("academia").value;
 
-            // Feedback visual de carregamento
             if (resultadosContainer) {
                 resultadosContainer.innerHTML = `<p style="text-align: center; color: #718096; padding: 20px; font-size: 0.9rem;">A pesquisar academias em ${cidade}...</p>`;
             }
 
-            // Faz a requisição AJAX para o ficheiro buscar_academia.php
             fetch(`buscar_academia.php?cidade=${encodeURIComponent(cidade)}&academia=${encodeURIComponent(academia)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -34,7 +32,14 @@
                 });
         });
     }
-});
+}
+
+// Executa de forma segura quer o DOM já tenha carregado ou não
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", iniciarApp);
+} else {
+    iniciarApp();
+}
 
 // Função para renderizar os cards de academias na tela
 function renderizarResultados(listaAcademias) {
@@ -52,20 +57,29 @@ function renderizarResultados(listaAcademias) {
         const card = document.createElement("div");
         card.className = "academia-card";
 
+        const iconeEstrela = acab.ehFavorita ? '⭐' : '☆';
+
         card.innerHTML = `
-            <div class="info">
-                <h3></h3>
-                <p></p>
+            <div class="info" style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0;"></h3>
+                    <button type="button" class="btn-favorito" id="fav-${acab.id}" style="background: none; border: none; font-size: 1.4rem; cursor: pointer;" title="Definir como favorita">
+                        ${iconeEstrela}
+                    </button>
+                </div>
+                <p style="margin: 5px 0;"></p>
                 <span id="status-${acab.id}" class="status-badge cinza">A carregar lotação...</span>
             </div>
-            <div class="acoes-voto">
-                <button type="button" class="btn-avaliar">Avaliar</button>
+            <div class="acoes-voto" style="margin-top: 10px;">
+                <button type="button" class="btn-avaliar" style="width: 100%; padding: 8px; border-radius: 6px; background: #2563eb; color: white; border: none; cursor: pointer; font-weight: bold;">Avaliar</button>
             </div>
         `;
 
         card.querySelector("h3").textContent = acab.nome;
-        card.querySelector("p").textContent = acab.endereco;
+        card.querySelector("p").textContent = acab.endereco || acab.cidade;
+        
         card.querySelector(".btn-avaliar").addEventListener("click", () => abrirModalVoto(acab.id, acab.nome));
+        card.querySelector(`#fav-${acab.id}`).addEventListener("click", () => alternarFavorito(acab.id));
 
         resultadosContainer.appendChild(card);
 
@@ -73,7 +87,22 @@ function renderizarResultados(listaAcademias) {
     });
 }
 
-// Faz a requisição ao buscar_lotacao.php para atualizar o status do card
+function alternarFavorito(idAcademia) {
+    fetch(`favoritar_academia.php?id=${idAcademia}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                const btnFav = document.getElementById(`fav-${idAcademia}`);
+                if (btnFav) {
+                    btnFav.textContent = data.favorito ? '⭐' : '☆';
+                }
+            } else {
+                alert(data.erro || "Erro ao atualizar favoritos.");
+            }
+        })
+        .catch(err => console.error("Erro ao favoritar:", err));
+}
+
 function verificarLotacao(idAcademia) {
     fetch(`buscar_lotacao.php?id_academia=${idAcademia}`)
         .then(response => response.json())
@@ -87,7 +116,6 @@ function verificarLotacao(idAcademia) {
         .catch(err => console.error("Erro ao buscar lotação:", err));
 }
 
-// Abre o Modal Moderno de Avaliação
 function abrirModalVoto(idAcademia, nomeAcademia) {
     const modalAntigo = document.getElementById('modal-avaliacao');
     if (modalAntigo) modalAntigo.remove();
@@ -126,7 +154,6 @@ function fecharModalVoto() {
     if (modal) modal.remove();
 }
 
-// Envia o voto via POST para o votar.php
 function enviarVotoDireto(idAcademia, nivelLotacao) {
     const formData = new FormData();
     formData.append('idAcademia', idAcademia);

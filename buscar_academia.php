@@ -1,6 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 require_once 'conexao.php';
+session_start();
+
+// Pega o ID do utilizador logado para verificar os favoritos
+$idUsuario = $_SESSION['idUsuario'] ?? $_SESSION['usuario_id'] ?? 0;
 
 $latUsuario = floatval($_GET['lat'] ?? 0);
 $lonUsuario = floatval($_GET['lon'] ?? 0);
@@ -8,7 +12,7 @@ $termo_cidade = trim($_GET['cidade'] ?? '');
 $termo_academia = trim($_GET['academia'] ?? '');
 
 try {
-    // A base da consulta usa WHERE 1=1 para facilitar adicionar os filtros à frente
+    // Adicionamos a subconsulta EXISTS para verificar se a academia é favorita do utilizador
     $sql = "SELECT 
                 a.idAcademia AS id, 
                 a.nome, 
@@ -17,21 +21,22 @@ try {
                 a.longitude, 
                 a.cidade,
                 a.statusLotacaoAtual,
-                (SELECT MAX(r.dataHora) FROM RegistroLotacao r WHERE r.idAcademia = a.idAcademia) AS ultimaAtualizacao
+                (SELECT MAX(r.dataHora) FROM RegistroLotacao r WHERE r.idAcademia = a.idAcademia) AS ultimaAtualizacao,
+                EXISTS(SELECT 1 FROM Favorito f WHERE f.idAcademia = a.idAcademia AND f.idUsuario = :idUsuario) AS ehFavorita
             FROM Academia a WHERE 1=1";
             
-    $params = [];
+    $params = ['idUsuario' => $idUsuario];
 
     // Adiciona o filtro da cidade, se o utilizador digitou algo
     if (!empty($termo_cidade)) {
-        $sql .= " AND a.cidade LIKE ?";
-        $params[] = "%$termo_cidade%";
+        $sql .= " AND a.cidade LIKE :cidade";
+        $params['cidade'] = "%$termo_cidade%";
     }
 
     // Adiciona o filtro do nome da academia, se o utilizador digitou algo
     if (!empty($termo_academia)) {
-        $sql .= " AND a.nome LIKE ?";
-        $params[] = "%$termo_academia%";
+        $sql .= " AND a.nome LIKE :academia";
+        $params['academia'] = "%$termo_academia%";
     }
 
     $stmt = $pdo->prepare($sql);
@@ -58,6 +63,10 @@ try {
         } else {
             $acab['distancia'] = null; 
         }
+        
+        // Converte o resultado do EXISTS para booleano real (true/false)
+        $acab['ehFavorita'] = (bool)$acab['ehFavorita'];
+        
         $academiasProcessadas[] = $acab;
     }
 
