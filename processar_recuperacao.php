@@ -29,10 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $link = rtrim(env('APP_URL'), '/') . '/redefinir_senha.php?token=' . $token;
 
-                $html = '<h2>Redefinir senha</h2>'
-                    . '<p>Clique no botão para criar uma nova senha. O link vale por 1 hora.</p>'
-                    . '<p><a href="' . $link . '" style="background:#0284c7;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">Redefinir senha</a></p>'
-                    . '<p>Se você não pediu isso, ignore esta mensagem.</p>';
+                $html = montarEmail(
+                    'Redefinir senha',
+                    'Clique no botão para criar uma nova senha. O link vale por 1 hora.',
+                    'Redefinir senha',
+                    $link,
+                    'Se você não pediu isso, ignore esta mensagem.'
+                );
 
                 enviarEmail($email, 'Redefinir sua senha no GymUp', $html);
             } catch (RuntimeException $e) {

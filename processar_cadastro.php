@@ -43,15 +43,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtInsert->execute([$nome, $email, $senha_hash, $token]);
 
         // Envia o e-mail de confirmação
+       // Envia o e-mail de confirmação
         $enviado = false;
         try {
             $link = rtrim(env('APP_URL'), '/') . '/modulo-email/verificar_email.php?token=' . $token;
-            $nomeSeguro = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
 
-            $html = '<h2>Bem-vindo ao GymUp, ' . $nomeSeguro . '!</h2>'
-                . '<p>Clique no botão abaixo para confirmar seu e-mail:</p>'
-                . '<p><a href="' . $link . '" style="background:#0284c7;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;">Confirmar e-mail</a></p>'
-                . '<p>Se você não criou uma conta, ignore esta mensagem.</p>';
+            $html = montarEmail(
+                'Bem-vindo ao GymUp, ' . $nome . '!',
+                'Clique no botão abaixo para confirmar seu e-mail.',
+                'Confirmar e-mail',
+                $link,
+                'Se você não criou uma conta, ignore esta mensagem.'
+            );
 
             $enviado = enviarEmail($email, 'Confirme seu e-mail no GymUp', $html);
         } catch (RuntimeException $e) {
