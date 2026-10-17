@@ -1,5 +1,5 @@
 // Troque o número da versão sempre que publicar uma atualização.
-const CACHE_NAME = 'gymup-v4';
+const CACHE_NAME = 'gymup-v5';
 
 // Telas e arquivos que ficam disponíveis mesmo sem internet.
 const urlsToCache = [

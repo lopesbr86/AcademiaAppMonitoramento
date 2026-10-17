@@ -1,6 +1,7 @@
 <?php
 require_once 'conexao.php';
 require_once 'modulo-email/enviar_email.php';
+require_once 'modulo-email/template_email.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = trim($_POST['nome'] ?? '');
