@@ -34,6 +34,13 @@ function formatarNivelLotacao($nivel) {
         default: return ['Normal', 'verde'];
     }
 }
+
+// O banco (Aiven) grava em UTC; aqui convertemos para o horário de Brasília na exibição
+function formatarDataHora($dataHora) {
+    $data = new DateTime($dataHora, new DateTimeZone('UTC'));
+    $data->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+    return $data->format('d/m/Y H:i');
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -81,7 +88,7 @@ function formatarNivelLotacao($nivel) {
                                 </span>
                             </div>
                             <span class="historico-data" style="font-size: 0.85rem; color: #94a3b8;">
-                                <?= date('d/m/Y H:i', strtotime($item['dataHora'])) ?> 
+                                <?= formatarDataHora($item['dataHora']) ?> 
                                 <?php if ($item['presencaValidada']): ?>
                                     <span style="color: #34d399; margin-left: 8px;">✓ Validado</span>
                                 <?php endif; ?>
