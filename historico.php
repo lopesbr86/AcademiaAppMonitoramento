@@ -34,6 +34,20 @@ function formatarNivelLotacao($nivel) {
         default: return ['Normal', 'verde'];
     }
 }
+
+// O banco (Aiven) grava em UTC. Aqui só preparamos a data em formato ISO (UTC);
+// quem converte para o fuso de cada usuário é o JavaScript, no navegador dele.
+function dataIsoUtc($dataHora) {
+    $data = new DateTime($dataHora, new DateTimeZone('UTC'));
+    return $data->format('Y-m-d\TH:i:s\Z');
+}
+
+// Texto de reserva (horário de Brasília), usado só se o JavaScript não rodar
+function formatarDataHora($dataHora) {
+    $data = new DateTime($dataHora, new DateTimeZone('UTC'));
+    $data->setTimezone(new DateTimeZone('America/Sao_Paulo'));
+    return $data->format('d/m/Y H:i');
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -81,7 +95,7 @@ function formatarNivelLotacao($nivel) {
                                 </span>
                             </div>
                             <span class="historico-data" style="font-size: 0.85rem; color: #94a3b8;">
-                                <?= date('d/m/Y H:i', strtotime($item['dataHora'])) ?> 
+                                <time class="data-local" datetime="<?= dataIsoUtc($item['dataHora']) ?>"><?= formatarDataHora($item['dataHora']) ?></time>
                                 <?php if ($item['presencaValidada']): ?>
                                     <span style="color: #34d399; margin-left: 8px;">✓ Validado</span>
                                 <?php endif; ?>
@@ -127,6 +141,17 @@ function formatarNivelLotacao($nivel) {
         </nav>
     </div>
     <script src="pwa.js"></script>
+    <script>
+        // Mostra cada data no fuso horário do aparelho do usuário
+        document.querySelectorAll('time.data-local').forEach(function (el) {
+            var d = new Date(el.getAttribute('datetime'));
+            if (isNaN(d)) return;
+            el.textContent = d.toLocaleString('pt-BR', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            }).replace(',', '');
+        });
+    </script>
 </body>
 
 </html>

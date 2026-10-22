@@ -33,11 +33,13 @@ if (empty($_SESSION['idUsuario'])) {
     responder(["sucesso" => false, "erro" => "Você precisa estar logado para votar."], 401);
 }
 
-$idUsuario     = (int) $_SESSION['idUsuario'];
-$idAcademia    = filter_input(INPUT_POST, 'idAcademia', FILTER_VALIDATE_INT);
-$statusLotacao = $_POST['status_lotacao'] ?? '';
+$idUsuario    = (int) $_SESSION['idUsuario'];
+$idAcademia   = filter_input(INPUT_POST, 'idAcademia', FILTER_VALIDATE_INT);
+$nivelLotacao = filter_input(INPUT_POST, 'nivelLotacao', FILTER_VALIDATE_INT, [
+    'options' => ['min_range' => 1, 'max_range' => 3]
+]);
 
-if (!$idAcademia || !is_string($statusLotacao) || !array_key_exists($statusLotacao, NIVEIS)) {
+if (!$idAcademia || !$nivelLotacao) {
     responder(["sucesso" => false, "erro" => "Dados incompletos ou inválidos."], 400);
 }
 
@@ -55,7 +57,7 @@ try {
         "INSERT INTO RegistroLotacao (idAcademia, idUsuario, nivelLotacao, dataHora, presencaValidada)
          VALUES (?, ?, ?, NOW(), 0)"
     );
-    $stmt->execute([$idAcademia, $idUsuario, NIVEIS[$statusLotacao]]);
+    $stmt->execute([$idAcademia, $idUsuario, $nivelLotacao]);
 
     $stmt = $pdo->prepare(
         "SELECT AVG(nivelLotacao) FROM RegistroLotacao
