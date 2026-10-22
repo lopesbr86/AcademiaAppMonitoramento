@@ -6,11 +6,16 @@
         formBusca.addEventListener("submit", function (e) {
             e.preventDefault();
 
-            const cidade = document.getElementById("cidade").value;
-            const academia = document.getElementById("academia").value;
+            const cidade = document.getElementById("cidade").value.trim();
+            const academia = document.getElementById("academia").value.trim();
+
+            if (!cidade) {
+                mostrarToast("Por favor, informe a cidade.", true);
+                return;
+            }
 
             if (resultadosContainer) {
-                resultadosContainer.innerHTML = `<p style="text-align: center; color: #718096; padding: 20px; font-size: 0.9rem;">A pesquisar academias em ${cidade}...</p>`;
+                resultadosContainer.innerHTML = `<p style="text-align: center; color: var(--texto-3); padding: 20px; font-size: 0.9rem;">A pesquisar academias em ${cidade}...</p>`;
             }
 
             fetch(`buscar_academia.php?cidade=${encodeURIComponent(cidade)}&academia=${encodeURIComponent(academia)}`)
@@ -18,7 +23,7 @@
                 .then(data => {
                     if (data.erro) {
                         if (resultadosContainer) {
-                            resultadosContainer.innerHTML = `<p style="text-align: center; color: #e53e3e; padding: 20px; font-size: 0.9rem;">${data.erro}</p>`;
+                            resultadosContainer.innerHTML = `<p style="text-align: center; color: var(--alto); padding: 20px; font-size: 0.9rem;">${data.erro}</p>`;
                         }
                     } else {
                         renderizarResultados(data);
@@ -27,7 +32,7 @@
                 .catch(err => {
                     console.error("Erro na busca:", err);
                     if (resultadosContainer) {
-                        resultadosContainer.innerHTML = `<p style="text-align: center; color: #e53e3e; padding: 20px; font-size: 0.9rem;">Erro ao conectar com o servidor.</p>`;
+                        resultadosContainer.innerHTML = `<p style="text-align: center; color: var(--alto); padding: 20px; font-size: 0.9rem;">Erro ao conectar com o servidor.</p>`;
                     }
                 });
         });
@@ -48,8 +53,17 @@ function renderizarResultados(listaAcademias) {
 
     resultadosContainer.innerHTML = "";
 
+    const cidadePesquisada = document.getElementById("cidade").value;
+    const nomePesquisado = document.getElementById("academia").value;
+
     if (!listaAcademias || listaAcademias.length === 0) {
-        resultadosContainer.innerHTML = `<p style="text-align: center; color: #718096; padding: 20px; font-size: 0.9rem;">Nenhuma academia encontrada.</p>`;
+        resultadosContainer.innerHTML = `
+            <div class="caixa-vazia">
+                <p style="font-weight: 700; color: var(--texto); margin-bottom: 4px;">Academia não encontrada</p>
+                <p style="font-size: 0.85rem; color: var(--texto-3); margin-bottom: 14px;">Cadastre para começar a monitorar nesta cidade.</p>
+                <a href="cadastrar_academia.html?cidade=${encodeURIComponent(cidadePesquisada)}&nome=${encodeURIComponent(nomePesquisado)}" class="btn-primary" style="text-decoration: none;">Cadastrar Academia</a>
+            </div>
+        `;
         return;
     }
 
@@ -85,6 +99,17 @@ function renderizarResultados(listaAcademias) {
 
         verificarLotacao(acab.id);
     });
+
+    // Adiciona a opção de cadastro no final da lista quando existem resultados encontrados
+    const cardCadastroExtra = document.createElement("div");
+    cardCadastroExtra.className = "caixa-vazia";
+    cardCadastroExtra.style.marginTop = "20px";
+    cardCadastroExtra.innerHTML = `
+        <p style="font-weight: 700; color: var(--texto); margin-bottom: 4px;">Não encontrou a sua academia?</p>
+        <p style="font-size: 0.85rem; color: var(--texto-3); margin-bottom: 14px;">Adicione-a agora mesmo à plataforma.</p>
+        <a href="cadastrar_academia.html?cidade=${encodeURIComponent(cidadePesquisada)}&nome=${encodeURIComponent(nomePesquisado)}" class="btn-primary" style="text-decoration: none;">Cadastrar Academia</a>
+    `;
+    resultadosContainer.appendChild(cardCadastroExtra);
 }
 
 function alternarFavorito(idAcademia) {
@@ -104,7 +129,8 @@ function alternarFavorito(idAcademia) {
 }
 
 function verificarLotacao(idAcademia) {
-    fetch(`buscar_lotacao.php?id_academia=${idAcademia}`)
+    // Adicionado o parâmetro _t para evitar cache do navegador e refletir os votos instantaneamente
+    fetch(`buscar_lotacao.php?id_academia=${idAcademia}&_t=${Date.now()}`)
         .then(response => response.json())
         .then(data => {
             const badge = document.getElementById(`status-${idAcademia}`);
@@ -168,7 +194,7 @@ function enviarVotoDireto(idAcademia, statusLotacao) {
             fecharModalVoto();
             if (data.sucesso) {
                 mostrarToast("Voto registrado com sucesso! Obrigado por ajudar a comunidade.");
-                verificarLotacao(idAcademia);
+                verificarLotacao(idAcademia); // Atualiza imediatamente o card na tela
             } else {
                 mostrarToast(data.erro || "Erro ao registrar o voto.", true);
             }

@@ -79,7 +79,8 @@ function formatarStatusLotacao($nivel) {
                 <h3>Encontrar academia</h3>
                 <form id="form-busca">
                     <label for="cidade">Cidade</label>
-                    <input type="text" id="cidade" name="cidade" placeholder="Ex: Santos, Guarujá..." required style="width: 100%; padding: 10px; margin: 8px 0 15px 0; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white;">
+                    <!-- Removido o atributo required para permitir a validação via Toast no script.js -->
+                    <input type="text" id="cidade" name="cidade" placeholder="Ex: Santos, Guarujá..." style="width: 100%; padding: 10px; margin: 8px 0 15px 0; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white;">
 
                     <label for="academia">Nome da academia (opcional)</label>
                     <input type="text" id="academia" name="academia" placeholder="Ex: General, Skyfit..." style="width: 100%; padding: 10px; margin: 8px 0 15px 0; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white;">

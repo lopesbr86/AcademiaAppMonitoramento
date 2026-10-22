@@ -1240,17 +1240,19 @@ a {
 }
 
 .caixa-vazia {
+    background: var(--superficie-2); /* Fundo escuro igual ao do app */
     border: 2px dashed var(--borda-2);
-    padding: 16px;
-    border-radius: 14px;
+    padding: 20px;
+    border-radius: 16px;
     text-align: center;
-    margin: 16px 0 20px
+    margin: 16px 0 20px;
+    color: var(--texto);
 }
 
 .caixa-vazia p {
     color: var(--texto-3);
     font-size: .9rem;
-    margin-bottom: 8px
+    margin-bottom: 12px;
 }
 
 .caixa-vazia a {

@@ -26,15 +26,31 @@
         <main class="app-content">
             <div class="search-card">
                 <div id="alerta-feedback" class="alerta-feedback"></div>
-                <form action="processar_cadastro_academia.php" method="POST">
+                
+                <form id="form-cadastro" action="processar_cadastro_academia.php" method="POST">
                     <div class="input-group">
                         <label for="nome">Nome da academia</label>
-                        <input type="text" id="nome" name="nome" required>
+                        <input type="text" id="nome" name="nome" placeholder="Ex: Smart Fit">
                     </div>
+
+                    <!-- Campo de Cidade Separado -->
                     <div class="input-group">
-                        <label for="endereco">Cidade / endereço</label>
-                        <input type="text" id="endereco" name="endereco" required>
+                        <label for="cidade">Cidade</label>
+                        <input type="text" id="cidade" name="cidade" placeholder="Ex: Guarujá ou Santos">
                     </div>
+
+                    <!-- Campo de Rua Separado -->
+                    <div class="input-group">
+                        <label for="rua">Rua / Logradouro</label>
+                        <input type="text" id="rua" name="rua" placeholder="Ex: Av. Ana Costa">
+                    </div>
+
+                    <!-- Campo de Número Separado -->
+                    <div class="input-group">
+                        <label for="numero">Número</label>
+                        <input type="text" id="numero" name="numero" placeholder="Ex: 100">
+                    </div>
+
                     <div class="input-group">
                         <label for="status_lotacao">Lotação inicial</label>
                         <select id="status_lotacao" name="status_lotacao">
@@ -45,18 +61,83 @@
                     </div>
                     <button type="submit" class="btn-primary">Salvar academia</button>
                 </form>
+
                 <div class="card-footer-link"><a href="index.php">Voltar ao início</a></div>
             </div>
         </main>
     </div>
+
     <script>
-        const status = new URLSearchParams(window.location.search).get("status");
-        const aviso = document.getElementById("alerta-feedback");
-        function mostrar(tipo, texto) { aviso.className = "alerta-feedback " + tipo; aviso.textContent = texto; }
-        if (status === "sucesso") mostrar("sucesso", "Academia cadastrada com sucesso!");
-        else if (status === "erro") mostrar("erro", "Não foi possível cadastrar a academia. Tente de novo.");
+        // Função auxiliar para exibir o Toast moderno na tela
+        function mostrarToast(mensagem, ehErro = false) {
+            const toastAntigo = document.querySelector('.toast');
+            if (toastAntigo) toastAntigo.remove();
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${ehErro ? 'erro' : ''}`;
+            toast.innerText = mensagem;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Tratamento de mensagens via URL (sucesso ou erros vindos do PHP)
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get("status");
+        const erro = urlParams.get("erro");
+
+        if (status === "sucesso") {
+            mostrarToast("Academia cadastrada com sucesso!");
+        } else if (erro === "duplicada") {
+            mostrarToast("Esta academia ou endereço já está cadastrada!", true);
+        } else if (erro === "campos_vazios" || status === "erro") {
+            mostrarToast("Por favor, preencha todos os campos corretamente.", true);
+        }
+
+        // Validação no envio para evitar o balão padrão do navegador
+        document.addEventListener("DOMContentLoaded", () => {
+            const formCadastro = document.getElementById("form-cadastro");
+
+            if (formCadastro) {
+                formCadastro.addEventListener("submit", function(e) {
+                    const nome = document.getElementById("nome").value.trim();
+                    const cidade = document.getElementById("cidade").value.trim();
+                    const rua = document.getElementById("rua").value.trim();
+                    const numero = document.getElementById("numero").value.trim();
+
+                    if (!nome || !cidade || !rua || !numero) {
+                        e.preventDefault();
+                        mostrarToast("Preencha todos os campos para continuar.", true);
+                    }
+                });
+            }
+        });
     </script>
+
     <script src="pwa.js"></script>
+    
+    <script>
+    // Preenche automaticamente a cidade se vier informada pela busca
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const cidadeURL = urlParams.get("cidade");
+        const nomeURL = urlParams.get("nome");
+
+        if (cidadeURL) {
+            const inputCidade = document.getElementById("cidade"); // Certifica-te de dar id="cidade" no input do HTML de cadastro
+            if (inputCidade) inputCidade.value = cidadeURL;
+        }
+        if (nomeURL) {
+            const inputNome = document.getElementById("nome");
+            if (inputNome) inputNome.value = nomeURL;
+        }
+    });
+</script>
 </body>
 
 </html>

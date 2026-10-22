@@ -35,9 +35,10 @@ if (empty($_SESSION['idUsuario'])) {
 
 $idUsuario    = (int) $_SESSION['idUsuario'];
 $idAcademia   = filter_input(INPUT_POST, 'idAcademia', FILTER_VALIDATE_INT);
-$nivelLotacao = filter_input(INPUT_POST, 'nivelLotacao', FILTER_VALIDATE_INT, [
-    'options' => ['min_range' => 1, 'max_range' => 3]
-]);
+
+// Recebe o texto enviado pelo JS (ex: 'Baixo', 'Moderado', 'Alto') e converte usando a constante NIVEIS
+$statusRecebido = $_POST['status_lotacao'] ?? '';
+$nivelLotacao   = NIVEIS[$statusRecebido] ?? null;
 
 if (!$idAcademia || !$nivelLotacao) {
     responder(["sucesso" => false, "erro" => "Dados incompletos ou inválidos."], 400);
