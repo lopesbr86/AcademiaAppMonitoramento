@@ -130,13 +130,13 @@ function abrirModalVoto(idAcademia, nomeAcademia) {
             <p>Como está a lotação da <strong class="nome-academia"></strong> agora?</p>
 
             <div class="opcoes-voto">
-                <button type="button" class="btn-opcao verde" onclick="enviarVotoDireto(${idAcademia}, 1)">
+                <button type="button" class="btn-opcao verde" onclick="enviarVotoDireto(${idAcademia}, 'Baixo')">
                     <span class="bolinha">🟢</span> Vazia / Tranquila
                 </button>
-                <button type="button" class="btn-opcao amarelo" onclick="enviarVotoDireto(${idAcademia}, 2)">
+                <button type="button" class="btn-opcao amarelo" onclick="enviarVotoDireto(${idAcademia}, 'Moderado')">
                     <span class="bolinha">🟡</span> Moderada
                 </button>
-                <button type="button" class="btn-opcao vermelho" onclick="enviarVotoDireto(${idAcademia}, 3)">
+                <button type="button" class="btn-opcao vermelho" onclick="enviarVotoDireto(${idAcademia}, 'Alto')">
                     <span class="bolinha">🔴</span> Lotada
                 </button>
             </div>
@@ -154,10 +154,10 @@ function fecharModalVoto() {
     if (modal) modal.remove();
 }
 
-function enviarVotoDireto(idAcademia, nivelLotacao) {
+function enviarVotoDireto(idAcademia, statusLotacao) {
     const formData = new FormData();
     formData.append('idAcademia', idAcademia);
-    formData.append('nivelLotacao', nivelLotacao);
+    formData.append('status_lotacao', statusLotacao);
 
     fetch('votar_academia.php', {
         method: 'POST',
@@ -167,15 +167,33 @@ function enviarVotoDireto(idAcademia, nivelLotacao) {
         .then(data => {
             fecharModalVoto();
             if (data.sucesso) {
-                alert("Voto registrado com sucesso! Obrigado por ajudar a comunidade GymUp.");
+                mostrarToast("Voto registrado com sucesso! Obrigado por ajudar a comunidade.");
                 verificarLotacao(idAcademia);
             } else {
-                alert(data.erro || "Erro ao registrar o voto.");
+                mostrarToast(data.erro || "Erro ao registrar o voto.", true);
             }
         })
         .catch(err => {
             fecharModalVoto();
-            alert("Erro ao registrar o voto.");
+            mostrarToast("Erro ao registrar o voto.", true);
             console.error(err);
         });
+}
+
+// Função auxiliar para exibir o Toast moderno na tela
+function mostrarToast(mensagem, ehErro = false) {
+    const toastAntigo = document.querySelector('.toast');
+    if (toastAntigo) toastAntigo.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${ehErro ? 'erro' : ''}`;
+    toast.innerText = mensagem;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }

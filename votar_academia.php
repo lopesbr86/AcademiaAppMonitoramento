@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once 'conexao.php';
-
+date_default_timezone_set('America/Sao_Paulo');
 const NIVEIS = ['Baixo' => 1, 'Moderado' => 2, 'Alto' => 3];
 const JANELA_MINUTOS = 90;
 

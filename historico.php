@@ -1,7 +1,7 @@
 <?php
 require_once 'conexao.php';
 session_start();
-
+date_default_timezone_set('America/Sao_Paulo');
 // Garante que o usuário está logado (ajuste o nome da session conforme o seu sistema de login)
 $idUsuario = $_SESSION['idUsuario'] ?? $_SESSION['usuario_id'] ?? null;
 
